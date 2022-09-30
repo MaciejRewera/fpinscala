@@ -55,8 +55,12 @@ object List: // `List` companion object. Contains functions for creating and wor
     case Nil => sys.error("setHead on an empty list")
     case Cons(_, tl) => Cons(h, tl)
 
-  def drop[A](l: List[A], n: Int): List[A] = ???
-
+  def drop[A](l: List[A], n: Int): List[A] = 
+    if n <= 0 then l
+    else l match
+      case Nil => Nil
+      case Cons(_, tl) => drop(tl, n - 1)
+        
   def dropWhile[A](l: List[A], f: A => Boolean): List[A] = ???
 
   def init[A](l: List[A]): List[A] = ???

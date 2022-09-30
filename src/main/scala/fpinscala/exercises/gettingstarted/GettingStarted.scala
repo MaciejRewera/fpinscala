@@ -110,6 +110,12 @@ object MonomorphicBinarySearch:
 
 object PolymorphicFunctions:
 
+  @main def printPolymorphicFunctions: Unit =
+    val sortedArray = Array(1,2,3,4,5)
+    println(s"sorted array: ${isSorted(sortedArray, _ < _)}")
+    println(s"sorted array reversed: ${isSorted(sortedArray.reverse, _ < _)}")
+    println(s"sorted string array: ${isSorted(Array("a", "b", "c", "d", "e"), _ < _)}")
+
   // Here's a polymorphic version of `findFirst`, parameterized on
   // a function for testing whether an `A` is the element we want to find.
   // Instead of hard-coding `String`, we take a type `A` as a parameter.
@@ -128,7 +134,16 @@ object PolymorphicFunctions:
 
   // Exercise 2: Implement a polymorphic function to check whether
   // an `Array[A]` is sorted
-  def isSorted[A](as: Array[A], gt: (A, A) => Boolean): Boolean = ???
+  def isSorted[A](as: Array[A], gt: (A, A) => Boolean): Boolean =
+
+    @annotation.tailrec
+    def loop(n: Int): Boolean =
+      if n >= as.length then true
+      else if gt(as(n - 1), as(n)) then loop(n + 1)
+      else false
+
+    if as.length <= 1 then true
+    else loop(1)
 
   // Polymorphic functions are often so constrained by their type
   // that they only have one implementation! Here's an example:

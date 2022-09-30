@@ -33,7 +33,14 @@ object MyProgram:
 
   // Exercise 1: Write a function to compute the nth fibonacci number
 
-  def fib(n: Int): Int = ???
+  def fib(n: Int): Int = {
+    @annotation.tailrec
+    def fib(counter: Int, prev: Int, current: Int): Int =
+      if (counter <= 0) prev
+      else fib(counter - 1, current, prev + current)
+
+    fib(n, 0 , 1)
+  }
 
   // This definition and `formatAbs` are very similar..
   private def formatFactorial(n: Int) =

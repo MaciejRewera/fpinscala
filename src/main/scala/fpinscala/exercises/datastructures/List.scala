@@ -102,7 +102,9 @@ object List: // `List` companion object. Contains functions for creating and wor
 
   def filter[A](as: List[A], f: A => Boolean): List[A] = foldRightViaFoldLeft(as, List[A](), (x, acc) => if f(x) then Cons(x, acc) else acc)
 
-  def flatMap[A,B](as: List[A], f: A => List[B]): List[B] = ???
+  def flatMap[A,B](as: List[A], f: A => List[B]): List[B] = foldRightViaFoldLeft(as, List[B](), (x, acc) => appendViaFoldLeft(f(x), acc))
+
+  def flatMap2[A,B](as: List[A], f: A => List[B]): List[B] = concat(map(as, f))
 
   def filterViaFlatMap[A](as: List[A], f: A => Boolean): List[A] = ???
 
@@ -111,3 +113,12 @@ object List: // `List` companion object. Contains functions for creating and wor
   // def zipWith - TODO determine signature
 
   def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = ???
+
+  @main def test = {
+    val list1 = List(1, 2, 3, 4, 5)
+    val list2 = List(6, 7)
+    val list3 = List(8, 9, 10)
+
+    println(s"flatMap: ${flatMap(list3, i => List(i, i))}")
+    println(s"flatMap2: ${flatMap2(list3, i => List(i, i))}")
+  }

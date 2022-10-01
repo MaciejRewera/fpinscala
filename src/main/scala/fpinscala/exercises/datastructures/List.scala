@@ -108,17 +108,18 @@ object List: // `List` companion object. Contains functions for creating and wor
 
   def filterViaFlatMap[A](as: List[A], f: A => Boolean): List[A] = flatMap(as, x => if f(x) then List(x) else Nil)
 
-  def addPairwise(a: List[Int], b: List[Int]): List[Int] = ???
+  def addPairwise(a: List[Int], b: List[Int]): List[Int] = (a, b) match
+    case (Nil, _) => Nil
+    case (_, Nil) => Nil
+    case (Cons(ahd, atl), Cons(bhd, btl)) => Cons(ahd + bhd, addPairwise(atl, btl))
 
   // def zipWith - TODO determine signature
 
   def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = ???
 
   @main def test = {
-    val list1 = List(1, 2, 3, 4, 5)
-    val list2 = List(6, 7)
-    val list3 = List(8, 9, 10)
+    val list1 = List(1, 2)
+    val list2 = List(4, 5, 6)
 
-    println(s"flatMap: ${flatMap(list3, i => List(i, i))}")
-    println(s"flatMap2: ${flatMap2(list3, i => List(i, i))}")
+    println(s"addPairwise: ${addPairwise(list1, list2)}")
   }

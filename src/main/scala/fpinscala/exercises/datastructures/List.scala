@@ -77,6 +77,8 @@ object List: // `List` companion object. Contains functions for creating and wor
     case Nil => acc
     case Cons(x, xs) => foldLeft(xs, f(acc, x), f)
 
+  def foldRightViaFoldLeft[A,B](l: List[A], acc: B, f: (A, B) => B): B = foldLeft(reverse(l), acc, (acc, x) => f(x, acc))
+
   def sumViaFoldLeft(ns: List[Int]): Int = foldLeft(ns, 0, _ + _)
 
   def productViaFoldLeft(ns: List[Double]): Double = foldLeft(ns, 1.0, _ * _)

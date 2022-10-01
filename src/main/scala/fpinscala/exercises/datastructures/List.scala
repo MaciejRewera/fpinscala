@@ -118,11 +118,34 @@ object List: // `List` companion object. Contains functions for creating and wor
     case (_, Nil) => Nil
     case (Cons(ahd, atl), Cons(bhd, btl)) => Cons(f(ahd, bhd), zipWith(atl, btl, f))
 
-  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = ???
+  def hasSubsequence[A](l: List[A], sub: List[A]): Boolean =
+    @annotation.tailrec
+    def matchSub(rest: List[A], sb: List[A]): Boolean = (rest, sb) match
+      case (_, Nil) => true
+      case (Nil, _) => false
+      case (Cons(h1, t1), Cons(h2, t2)) if h1 == h2 => matchSub(t1, t2)
+      case (Cons(_, t1), Cons(_, _))                => matchSub(t1, sub)
 
+    matchSub(l, sub)
+
+  
   @main def test = {
-    val list1 = List(1, 2)
-    val list2 = List(4, 5, 6)
+    val list1 = List(1, 2, 3, 4)
 
-    println(s"zipWith: ${zipWith(list1, list2, _ + _)}")
+    println(s"hasSubsequence (1, 2) (true): ${hasSubsequence(list1, List(1, 2))}")
+    println(s"hasSubsequence (2, 3) (true): ${hasSubsequence(list1, List(2, 3))}")
+    //
+    println(s"hasSubsequence (3, 4) (true): ${hasSubsequence(list1, List(3, 4))}")
+
+    println(s"hasSubsequence (1) (true): ${hasSubsequence(list1, List(1))}")
+    println(s"hasSubsequence (2) (true): ${hasSubsequence(list1, List(2))}")
+    println(s"hasSubsequence (3) (true): ${hasSubsequence(list1, List(3))}")
+    //
+    println(s"hasSubsequence (4) (true): ${hasSubsequence(list1, List(4))}")
+    println(s"hasSubsequence Nil (true): ${hasSubsequence(list1, List())}")
+
+    println(s"hasSubsequence (5) (false): ${hasSubsequence(list1, List(5))}")
+    println(s"hasSubsequence (1, 4) (false): ${hasSubsequence(list1, List(1, 4))}")
+    println(s"hasSubsequence (1, 3) (false): ${hasSubsequence(list1, List(1, 3))}")
+    println(s"hasSubsequence (2, 1) (false): ${hasSubsequence(list1, List(2, 1))}")
   }

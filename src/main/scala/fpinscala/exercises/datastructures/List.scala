@@ -128,24 +128,32 @@ object List: // `List` companion object. Contains functions for creating and wor
 
     matchSub(l, sub)
 
-  
+  @annotation.tailrec
+  def startsWith[A](l: List[A], prefix: List[A]): Boolean = (l, prefix) match
+    case (_, Nil) => true
+    case (Cons(h1, t1), Cons(h2, t2)) if h1 == h2 => startsWith(t1, t2)
+    case _ => false
+
+  @annotation.tailrec
+  def hasSubsequenceViaStartsWith[A](l: List[A], sub: List[A]): Boolean = l match
+    case Nil => sub == Nil
+    case _ if startsWith(l, sub) => true
+    case Cons(_, t) => hasSubsequenceViaStartsWith(t, sub)
+
   @main def test = {
     val list1 = List(1, 2, 3, 4)
 
-    println(s"hasSubsequence (1, 2) (true): ${hasSubsequence(list1, List(1, 2))}")
-    println(s"hasSubsequence (2, 3) (true): ${hasSubsequence(list1, List(2, 3))}")
-    //
-    println(s"hasSubsequence (3, 4) (true): ${hasSubsequence(list1, List(3, 4))}")
+    println(s"hasSubsequenceViaStartsWith (1, 2) (true): ${hasSubsequenceViaStartsWith(list1, List(1, 2))}")
+    println(s"hasSubsequenceViaStartsWith (2, 3) (true): ${hasSubsequenceViaStartsWith(list1, List(2, 3))}")
+    println(s"hasSubsequenceViaStartsWith (3, 4) (true): ${hasSubsequenceViaStartsWith(list1, List(3, 4))}")
+    println(s"hasSubsequenceViaStartsWith (1) (true): ${hasSubsequenceViaStartsWith(list1, List(1))}")
+    println(s"hasSubsequenceViaStartsWith (2) (true): ${hasSubsequenceViaStartsWith(list1, List(2))}")
+    println(s"hasSubsequenceViaStartsWith (3) (true): ${hasSubsequenceViaStartsWith(list1, List(3))}")
+    println(s"hasSubsequenceViaStartsWith (4) (true): ${hasSubsequenceViaStartsWith(list1, List(4))}")
+    println(s"hasSubsequenceViaStartsWith Nil (true): ${hasSubsequenceViaStartsWith(list1, List())}")
 
-    println(s"hasSubsequence (1) (true): ${hasSubsequence(list1, List(1))}")
-    println(s"hasSubsequence (2) (true): ${hasSubsequence(list1, List(2))}")
-    println(s"hasSubsequence (3) (true): ${hasSubsequence(list1, List(3))}")
-    //
-    println(s"hasSubsequence (4) (true): ${hasSubsequence(list1, List(4))}")
-    println(s"hasSubsequence Nil (true): ${hasSubsequence(list1, List())}")
-
-    println(s"hasSubsequence (5) (false): ${hasSubsequence(list1, List(5))}")
-    println(s"hasSubsequence (1, 4) (false): ${hasSubsequence(list1, List(1, 4))}")
-    println(s"hasSubsequence (1, 3) (false): ${hasSubsequence(list1, List(1, 3))}")
-    println(s"hasSubsequence (2, 1) (false): ${hasSubsequence(list1, List(2, 1))}")
+    println(s"hasSubsequenceViaStartsWith (5) (false): ${hasSubsequenceViaStartsWith(list1, List(5))}")
+    println(s"hasSubsequenceViaStartsWith (1, 4) (false): ${hasSubsequenceViaStartsWith(list1, List(1, 4))}")
+    println(s"hasSubsequenceViaStartsWith (1, 3) (false): ${hasSubsequenceViaStartsWith(list1, List(1, 3))}")
+    println(s"hasSubsequenceViaStartsWith (2, 1) (false): ${hasSubsequenceViaStartsWith(list1, List(2, 1))}")
   }

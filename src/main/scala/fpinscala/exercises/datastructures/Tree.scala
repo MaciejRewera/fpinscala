@@ -38,12 +38,12 @@ object Tree:
       case Leaf(value)  => value
       case Branch(l, r) => l.maximum max r.maximum
 
-  extension (t: Tree[Int]) def maximumViaFold: Int = ???
+  extension (t: Tree[Int]) def maximumViaFold: Int = t.fold(identity, _ max _)
 
   @main def testTree: Unit = {
-    val tree = Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(3), Branch(Leaf(4), Leaf(5))))
+    val tree = Branch(Branch(Leaf(1), Leaf(21)), Branch(Leaf(13), Branch(Leaf(4), Leaf(5))))
 
     println(s"tree: ${tree}")
-    println(s"       depth:  ${tree.depth}")
-    println(s"depthViaFold:  ${tree.depthViaFold}")
+    println(s"       maximum:  ${tree.maximum}")
+    println(s"maximumViaFold:  ${tree.maximumViaFold}")
   }

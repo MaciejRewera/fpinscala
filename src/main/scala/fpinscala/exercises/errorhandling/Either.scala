@@ -18,7 +18,11 @@ enum Either[+E,+A]:
 
   def orElse[EE >: E, B >: A](b: => Either[EE, B]): Either[EE, B] = ???
 
-  def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = ???
+  def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] =
+    for {
+      aa <- this
+      bb <- b
+    } yield f(aa, bb)
 
 object Either:
   def traverse[E,A,B](es: List[A])(f: A => Either[E, B]): Either[E, List[B]] = ???

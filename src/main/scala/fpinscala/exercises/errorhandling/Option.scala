@@ -1,13 +1,15 @@
 package fpinscala.exercises.errorhandling
 
 // Hide std library `Option` since we are writing our own in this chapter
-import scala.{Option as _, Some as _, None as _}
+import scala.{None as _, Option as _, Some as _}
 
 enum Option[+A]:
   case Some(get: A)
   case None
 
-  def map[B](f: A => B): Option[B] = ???
+  def map[B](f: A => B): Option[B] = this match
+    case None => None
+    case Some(v) => Some(f(v))
 
   def getOrElse[B>:A](default: => B): B = ???
 

@@ -15,11 +15,11 @@ enum Option[+A]:
     case None => default
     case Some(v) => v
 
-  def flatMap[B](f: A => Option[B]): Option[B] = ???
+  def flatMap[B](f: A => Option[B]): Option[B] = map(f).getOrElse(None)
 
-  def orElse[B>:A](ob: => Option[B]): Option[B] = ???
+  def orElse[B>:A](ob: => Option[B]): Option[B] = map(Some(_)).getOrElse(ob)
 
-  def filter(f: A => Boolean): Option[A] = ???
+  def filter(f: A => Boolean): Option[A] = flatMap(a => if f(a) then Some(a) else None)
 
 object Option:
 
@@ -47,3 +47,24 @@ object Option:
   def sequence[A](as: List[Option[A]]): Option[List[A]] = ???
 
   def traverse[A, B](as: List[A])(f: A => Option[B]): Option[List[B]] = ???
+
+  @main def testOption = {
+    val option1 = Some(3)
+
+    println(s"option1: $option1")
+
+    println(s"map: ${option1.map(_ * 2)}")
+    println(s"map: ${option1.map(_ + 1)}")
+
+    println(s"getOrElse: ${option1.getOrElse(7)}")
+    println(s"getOrElse: ${None.getOrElse(7)}")
+
+    println(s"flatMap: ${option1.flatMap(a => Some(a + 1))}")
+
+    println(s"orElse: ${option1.orElse(Some(7))}")
+    println(s"orElse: ${None.orElse(Some(7))}")
+
+    println(s"filter: ${option1.filter(_ % 2 != 0)}")
+    println(s"filter: ${option1.filter(_ % 2 == 0)}")
+
+  }

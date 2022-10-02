@@ -1,14 +1,16 @@
 package fpinscala.exercises.errorhandling
 
 // Hide std library `Either` since we are writing our own in this chapter
-import scala.{Either as _, Left as _, Right as _}
 import scala.util.control.NonFatal
+import scala.{Either as _, Left as _, Right as _}
 
 enum Either[+E,+A]:
   case Left(get: E)
   case Right(get: A)
 
-  def map[B](f: A => B): Either[E, B] = ???
+  def map[B](f: A => B): Either[E, B] = this match
+    case Left(e) => Left(e)
+    case Right(v) => Right(f(v))
 
   def flatMap[EE >: E, B](f: A => Either[EE, B]): Either[EE, B] = ???
 

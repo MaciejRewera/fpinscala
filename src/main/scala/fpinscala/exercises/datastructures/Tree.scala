@@ -8,7 +8,9 @@ enum Tree[+A]:
     case Leaf(_) => 1
     case Branch(l, r) => 1 + l.size + r.size
 
-  def depth: Int = ???
+  def depth: Int = this match
+    case Leaf(_) => 0
+    case Branch(l, r) => 1 + (l.depth max r.depth)
 
   def map[B](f: A => B): Tree[B] = ???
 
@@ -35,7 +37,7 @@ object Tree:
   extension (t: Tree[Int]) def maximumViaFold: Int = ???
 
   @main def testTree: Unit = {
-    val tree = Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(13), Branch(Leaf(4), Leaf(5))))
+    val tree = Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(3), Branch(Leaf(4), Leaf(5))))
 
-    println(s"maximum: ${tree.maximum}")
+    println(s"depth: ${tree.depth}")
   }

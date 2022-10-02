@@ -51,7 +51,15 @@ object Option:
       b <- bOpt
     } yield f(a, b)
 
-  def sequence[A](as: List[Option[A]]): Option[List[A]] = ???
+  def sequence[A](as: List[Option[A]]): Option[List[A]] =
+    as.foldRight[Option[List[A]]](Some(List.empty)) { (a, acc) => map2(a, acc)(_ :: _) }
+
+  def sequence2[A](as: List[Option[A]]): Option[List[A]] = as match
+    case Nil => Some(Nil)
+    case hd :: tl => for {
+      h <- hd
+      acc <- sequence2(tl)
+    } yield h :: acc
 
   def traverse[A, B](as: List[A])(f: A => Option[B]): Option[List[B]] = ???
 
@@ -59,6 +67,8 @@ object Option:
     val option1 = Some(3)
     val option2 = Some(7)
 
-    println(s"map2: ${map2(option1, option2)(_ + _)}")
-    println(s"map2: ${map2(option1, option2)(_ * _)}")
+    println(s"sequence: ${sequence(List(option1, option2))}")
+    println(s"sequence2: ${sequence2(List(option1, option2))}")
+    println(s"sequence: ${sequence(List(option1, None, option2))}")
+    println(s"sequence2: ${sequence2(List(option1, None, option2))}")
   }

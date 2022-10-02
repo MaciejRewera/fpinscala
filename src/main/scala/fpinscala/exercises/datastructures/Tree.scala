@@ -24,7 +24,7 @@ enum Tree[+A]:
   
   def depthViaFold: Int = fold(_ => 0, _ max _ + 1)
   
-  def mapViaFold[B](f: A => B): Tree[B] = ???
+  def mapViaFold[B](f: A => B): Tree[B] = fold(a => Leaf(f(a)), Branch(_, _))
 
 object Tree:
 
@@ -41,9 +41,13 @@ object Tree:
   extension (t: Tree[Int]) def maximumViaFold: Int = t.fold(identity, _ max _)
 
   @main def testTree: Unit = {
-    val tree = Branch(Branch(Leaf(1), Leaf(21)), Branch(Leaf(13), Branch(Leaf(4), Leaf(5))))
+    val tree = Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(3), Branch(Leaf(4), Leaf(5))))
 
-    println(s"tree: ${tree}")
-    println(s"       maximum:  ${tree.maximum}")
-    println(s"maximumViaFold:  ${tree.maximumViaFold}")
+    println(s"      tree: ${tree}")
+    println(s"       map: ${tree.map(_ * 2)}")
+    println(s"mapViaFold: ${tree.mapViaFold(_ * 2)}")
+    println(s"       map: ${tree.map(_ + 3)}")
+    println(s"mapViaFold: ${tree.mapViaFold(_ + 3)}")
+    println(s"       map: ${tree.map(_ * 2).map(_ - 1)}")
+    println(s"mapViaFold: ${tree.mapViaFold(_ * 2).map(_ - 1)}")
   }

@@ -22,7 +22,7 @@ enum Tree[+A]:
   
   def sizeViaFold: Int = fold(_ => 1, _ + _ + 1)
   
-  def depthViaFold: Int = ???
+  def depthViaFold: Int = fold(_ => 0, _ max _ + 1)
   
   def mapViaFold[B](f: A => B): Tree[B] = ???
 
@@ -44,6 +44,6 @@ object Tree:
     val tree = Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(3), Branch(Leaf(4), Leaf(5))))
 
     println(s"tree: ${tree}")
-    println(s"       size:  ${tree.size}")
-    println(s"sizeViaFold:  ${tree.sizeViaFold}")
+    println(s"       depth:  ${tree.depth}")
+    println(s"depthViaFold:  ${tree.depthViaFold}")
   }

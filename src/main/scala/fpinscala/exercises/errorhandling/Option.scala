@@ -11,7 +11,9 @@ enum Option[+A]:
     case None => None
     case Some(v) => Some(f(v))
 
-  def getOrElse[B>:A](default: => B): B = ???
+  def getOrElse[B>:A](default: => B): B = this match
+    case None => default
+    case Some(v) => v
 
   def flatMap[B](f: A => Option[B]): Option[B] = ???
 

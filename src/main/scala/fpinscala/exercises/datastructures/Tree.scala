@@ -28,6 +28,14 @@ object Tree:
 
   extension (t: Tree[Int]) def firstPositive: Int = ???
 
-  extension (t: Tree[Int]) def maximum: Int = ???
+  extension (t: Tree[Int]) def maximum: Int = t match
+      case Leaf(value)  => value
+      case Branch(l, r) => l.maximum max r.maximum
 
   extension (t: Tree[Int]) def maximumViaFold: Int = ???
+
+  @main def testTree: Unit = {
+    val tree = Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(13), Branch(Leaf(4), Leaf(5))))
+
+    println(s"maximum: ${tree.maximum}")
+  }

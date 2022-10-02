@@ -1,6 +1,8 @@
 package fpinscala.exercises.errorhandling
 
 // Hide std library `Option` since we are writing our own in this chapter
+import fpinscala.exercises.errorhandling.Option.mean
+
 import scala.{None as _, Option as _, Some as _}
 
 enum Option[+A]:
@@ -40,7 +42,8 @@ object Option:
     if xs.isEmpty then None
     else Some(xs.sum / xs.length)
 
-  def variance(xs: Seq[Double]): Option[Double] = ???
+  extension (xs: Seq[Double]) def variance: Option[Double] =
+    mean(xs).flatMap(m => mean(xs.map(x => math.pow(x - m, 2))))
 
   def map2[A,B,C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = ???
 
@@ -49,22 +52,12 @@ object Option:
   def traverse[A, B](as: List[A])(f: A => Option[B]): Option[List[B]] = ???
 
   @main def testOption = {
-    val option1 = Some(3)
+    val seq1 = Seq(1.0, 2.0, 3.0)
+    val seq2 = Seq(0.0, 2.0, 4.0)
 
-    println(s"option1: $option1")
+    println(s"seq1: $seq1")
+    println(s"variance: ${seq1.variance}")
 
-    println(s"map: ${option1.map(_ * 2)}")
-    println(s"map: ${option1.map(_ + 1)}")
-
-    println(s"getOrElse: ${option1.getOrElse(7)}")
-    println(s"getOrElse: ${None.getOrElse(7)}")
-
-    println(s"flatMap: ${option1.flatMap(a => Some(a + 1))}")
-
-    println(s"orElse: ${option1.orElse(Some(7))}")
-    println(s"orElse: ${None.orElse(Some(7))}")
-
-    println(s"filter: ${option1.filter(_ % 2 != 0)}")
-    println(s"filter: ${option1.filter(_ % 2 == 0)}")
-
+    println(s"seq2: $seq2")
+    println(s"variance: ${seq2.variance}")
   }

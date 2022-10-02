@@ -45,19 +45,20 @@ object Option:
   extension (xs: Seq[Double]) def variance: Option[Double] =
     mean(xs).flatMap(m => mean(xs.map(x => math.pow(x - m, 2))))
 
-  def map2[A,B,C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = ???
+  def map2[A,B,C](aOpt: Option[A], bOpt: Option[B])(f: (A, B) => C): Option[C] =
+    for {
+      a <- aOpt
+      b <- bOpt
+    } yield f(a, b)
 
   def sequence[A](as: List[Option[A]]): Option[List[A]] = ???
 
   def traverse[A, B](as: List[A])(f: A => Option[B]): Option[List[B]] = ???
 
   @main def testOption = {
-    val seq1 = Seq(1.0, 2.0, 3.0)
-    val seq2 = Seq(0.0, 2.0, 4.0)
+    val option1 = Some(3)
+    val option2 = Some(7)
 
-    println(s"seq1: $seq1")
-    println(s"variance: ${seq1.variance}")
-
-    println(s"seq2: $seq2")
-    println(s"variance: ${seq2.variance}")
+    println(s"map2: ${map2(option1, option2)(_ + _)}")
+    println(s"map2: ${map2(option1, option2)(_ * _)}")
   }

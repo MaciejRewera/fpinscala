@@ -12,7 +12,9 @@ enum Either[+E,+A]:
     case Left(e) => Left(e)
     case Right(v) => Right(f(v))
 
-  def flatMap[EE >: E, B](f: A => Either[EE, B]): Either[EE, B] = ???
+  def flatMap[EE >: E, B](f: A => Either[EE, B]): Either[EE, B] = this match
+    case Left(e) => Left(e)
+    case Right(v) => f(v)
 
   def orElse[EE >: E, B >: A](b: => Either[EE, B]): Either[EE, B] = ???
 

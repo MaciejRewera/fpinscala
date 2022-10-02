@@ -56,19 +56,29 @@ object Option:
 
   def sequence2[A](as: List[Option[A]]): Option[List[A]] = as match
     case Nil => Some(Nil)
-    case hd :: tl => for {
-      h <- hd
-      acc <- sequence2(tl)
-    } yield h :: acc
+    case hd :: tl => map2(hd, sequence2(tl))(_ :: _)
 
-  def traverse[A, B](as: List[A])(f: A => Option[B]): Option[List[B]] = ???
+  def Try[A](a: => A): Option[A] =
+    try Some(a)
+    catch { case e: Exception => None }
+
+  def traverse[A, B](as: List[A])(f: A => Option[B]): Option[List[B]] =
+    as.foldRight[Option[List[B]]](Some(Nil)) { (a, acc) => map2(f(a), acc)(_ :: _) }
+
+  def traverse2[A, B](as: List[A])(f: A => Option[B]): Option[List[B]] = as match
+    case Nil => Some(Nil)
+    case hd :: tl => map2(f(hd), traverse2(tl)(f))(_ :: _)
+
+  def sequenceViaTraverse[A](as: List[Option[A]]): Option[List[A]] = traverse(as)(identity)
 
   @main def testOption = {
-    val option1 = Some(3)
-    val option2 = Some(7)
+    val list = List("1", "2", "3")
 
-    println(s"sequence: ${sequence(List(option1, option2))}")
-    println(s"sequence2: ${sequence2(List(option1, option2))}")
-    println(s"sequence: ${sequence(List(option1, None, option2))}")
-    println(s"sequence2: ${sequence2(List(option1, None, option2))}")
+    println(s"traverse:  ${traverse(list)(i => Try(i + "ms"))}")
+    println(s"traverse2: ${traverse2(list)(i => Try(i + "ms"))}")
+    println(s"traverse:  ${traverse(List("1", "q"))(i => Try(i.toInt))}")
+    println(s"traverse2: ${traverse2(List("1", "q"))(i => Try(i.toInt))}")
+
+    println(s"sequenceViaTraverse: ${sequenceViaTraverse(List(Some(1), Some(2), Some(3)))}")
+    println(s"sequenceViaTraverse: ${sequenceViaTraverse(List(Some(1), None, Some(3)))}")
   }

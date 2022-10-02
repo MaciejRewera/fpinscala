@@ -12,7 +12,9 @@ enum Tree[+A]:
     case Leaf(_) => 0
     case Branch(l, r) => 1 + (l.depth max r.depth)
 
-  def map[B](f: A => B): Tree[B] = ???
+  def map[B](f: A => B): Tree[B] = this match
+    case Leaf(value) => Leaf(f(value))
+    case Branch(l, r) => Branch(l.map(f), r.map(f))
 
   def fold[B](f: A => B, g: (B,B) => B): B = ???
   
@@ -39,5 +41,8 @@ object Tree:
   @main def testTree: Unit = {
     val tree = Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(3), Branch(Leaf(4), Leaf(5))))
 
-    println(s"depth: ${tree.depth}")
+    println(s"tree: ${tree}")
+    println(s"map:  ${tree.map(_ * 2)}")
+    println(s"map:  ${tree.map(_ + 3)}")
+    println(s"map:  ${tree.map(_ * 2).map(_ - 1)}")
   }

@@ -27,9 +27,14 @@ enum Either[+E,+A]:
     } yield f(aa, bb)
 
 object Either:
-  def traverse[E,A,B](es: List[A])(f: A => Either[E, B]): Either[E, List[B]] = ???
+  def traverse[E,A,B](list: List[A])(f: A => Either[E, B]): Either[E, List[B]] = list match
+    case Nil => Right(Nil)
+    case hd :: tl => f(hd).map2(traverse(tl)(f))(_ :: _)
 
-  def sequence[E,A](es: List[Either[E,A]]): Either[E,List[A]] = ???
+  def traverse2[E,A,B](list: List[A])(f: A => Either[E, B]): Either[E, List[B]] =
+    list.foldRight[Either[E, List[B]]](Right(List.empty)) { (x, acc) => f(x).map2(acc)(_ :: _) }
+
+  def sequence[E,A](es: List[Either[E,A]]): Either[E,List[A]] = traverse(es)(identity)
 
   def mean(xs: IndexedSeq[Double]): Either[String, Double] = 
     if xs.isEmpty then
@@ -50,3 +55,14 @@ object Either:
   def traverseAll[E, A, B](es: List[A], f: A => Either[List[E], B]): Either[List[E], List[B]] = ???
 
   def sequenceAll[E, A](es: List[Either[List[E], A]]): Either[List[E], List[A]] = ???
+
+  @main def testEither = {
+
+    println(s" traverse:  ${traverse(List("1", "2", "3"))(i => catchNonFatal(i + "ms"))}")
+    println(s"traverse2:  ${traverse2(List("1", "2", "3"))(i => catchNonFatal(i + "ms"))}")
+    println(s" traverse:  ${traverse(List("1", "q"))(i => catchNonFatal(i.toInt))}")
+    println(s"traverse2:  ${traverse2(List("1", "q"))(i => catchNonFatal(i.toInt))}")
+
+    println(s"sequence: ${sequence(List(Right(1), Right(2), Right(3)))}")
+    println(s"sequence: ${sequence(List(Right(1), Left("Nope"), Right(3)))}")
+  }

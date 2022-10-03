@@ -71,42 +71,40 @@ object Either:
   def sequenceAll[E, A](list: List[Either[List[E], A]]): Either[List[E], List[A]] = traverseAll(list)(identity)
 
   case class Person(name: Name, age: Age)
-  sealed case class Name( value: String)
-  sealed case class Age( value: Int)
+  object Person:
+    def apply(name: String, age: Int): Either[String, Person] =
+      Name(name).map2(Age(age))(Person(_, _))
 
-  def mkName(name: String): Either[String, Name] =
-    if (name == "" || name == null) Left("Name is empty.")
-    else Right( Name(name))
+  case class Name private (value: String)
+  object Name:
+    def apply(name: String): Either[String, Name] =
+      if (name == "" || name == null) Left("Name is empty.")
+      else Right(new Name(name))
 
-  def mkAge(age: Int): Either[String, Age] =
-    if age < 0 then Left("Age is out of range.")
-    else Right( Age(age))
+  case class Age private (value: Int)
+  object Age:
+    def apply(age: Int): Either[String, Age] =
+      if age < 0 then Left("Age is out of range.")
+      else Right(new Age(age))
 
-  def mkPerson(name: String, age: Int): Either[String, Person] =
-    mkName(name).map2(mkAge(age))(Person(_, _))
+  def mkPerson(name: String, age: Int): Either[List[String], Person] =
+    map2All(Name(name).liftToCumulative, Age(age).liftToCumulative)(Person(_, _))
 
-  def mkName2(name: String): Either[List[String], Name] =
-    if (name == "" || name == null) Left(List("Name is empty."))
-    else Right( Name(name))
-
-  def mkAge2(age: Int): Either[List[String], Age] =
-    if age < 0 then Left(List("Age is out of range."))
-    else Right( Age(age))
-
-  def mkPerson2(name: String, age: Int): Either[List[String], Person] =
-    map2All(mkName2(name), mkAge2(age))(Person(_, _))
+  extension [E, A](e: Either[E, A]) def liftToCumulative: Either[List[E], A] = e match
+    case Left(e) => Left(List(e))
+    case Right(v) => Right(v)
 
   @main def testEither = {
 
-    println(s" mkPerson: ${mkPerson("Mike", 23)}")
-    println(s" mkPerson: ${mkPerson("", 23)}")
-    println(s" mkPerson: ${mkPerson("Mike", -1)}")
-    println(s" mkPerson: ${mkPerson("", -1)}")
+    println(s"  Person: ${Person("Mike", 23)}")
+    println(s"  Person: ${Person("", 23)}")
+    println(s"  Person: ${Person("Mike", -1)}")
+    println(s"  Person: ${Person("", -1)}")
 
-    println(s"mkPerson2: ${mkPerson2("Mike", 23)}")
-    println(s"mkPerson2: ${mkPerson2("", 23)}")
-    println(s"mkPerson2: ${mkPerson2("Mike", -1)}")
-    println(s"mkPerson2: ${mkPerson2("", -1)}")
+    println(s"mkPerson: ${mkPerson("Mike", 23)}")
+    println(s"mkPerson: ${mkPerson("", 23)}")
+    println(s"mkPerson: ${mkPerson("Mike", -1)}")
+    println(s"mkPerson: ${mkPerson("", -1)}")
 
     println()
     println(s"traverseAll: ${traverseAll(List("1", "2", "3"))(i => catchNonFatalAll(i + "ms"))}")

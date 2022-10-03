@@ -35,8 +35,17 @@ enum LazyList[+A]:
       case Cons(h,t) => f(h(), t().foldRight(z)(f)) // If `f` doesn't evaluate its second argument, the recursion never occurs.
       case _ => z
 
+  @tailrec
+  final def foldLeft[B](z: => B)(f: (B, A) => B): B =this match
+      case Cons(h, t) => t().foldLeft(f(z, h()))(f)
+      case _ => z
+
   def exists(p: A => Boolean): Boolean =
     foldRight(false)((a, b) => p(a) || b) // Here `b` is the unevaluated recursive step that folds the tail of the lazy list. If `p(a)` returns `true`, `b` will never be evaluated and the computation terminates early.
+
+  def existsLeft(p: A => Boolean): Boolean = this match
+    case Empty => false
+    case Cons(h, t) => if p(h()) then true else t().exists(p)
 
   @tailrec
   final def existsRec(p: A => Boolean): Boolean = this match
@@ -95,10 +104,32 @@ object LazyList:
   lazy val onesViaUnfold: LazyList[Int] = ???
 
   @main def testLazyList(): Unit = {
-    val stream = LazyList(1, 1, 2, 3, 4, 5)
+    val stream = LazyList(1, 1, 2, 3, 3)
 
-    println(s"stream: ${stream}")
-    println(s"exists: ${stream.exists(a => { println("hi"); a % 2 == 0 })}")
-    println(s"existsRec: ${stream.existsRec(a => { println("hi"); a % 2 == 0 })}")
+    val func = (a: Int) => {
+      println(s"hi $a")
+      val res = a % 2 == 0
+      res
+    }
+
+    val funcLeft: (Int, Int) => Int = (acc, a) => {
+      println(s"hi $a")
+      val res = a + acc
+      println(s"hi $a : ${res - a}")
+      res
+    }
+    val funcRight: (Int, => Int) => Int = (a, acc) => {
+      println(s"hi $a")
+      val res = a + acc
+      println(s"hi $a : ${res - a}")
+      res
+    }
+
+    println(s"stream: ${stream.toList}")
+    println(s"exists: ${stream.exists(func)}")
+    println(s"existsRec: ${stream.existsRec(func)}")
+    println(s"existsLeft: ${stream.existsLeft(func)}")
+    println(s"foldLeft: ${stream.foldLeft(0)(funcLeft)}")
+    println(s"foldRight: ${stream.foldRight(0)(funcRight)}")
 
   }

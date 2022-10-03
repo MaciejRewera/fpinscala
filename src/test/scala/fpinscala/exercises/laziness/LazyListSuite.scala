@@ -39,23 +39,23 @@ class LazyListSuite extends PropSuite:
   }
 
   test("LazyList.toList")(genIntList) { list =>
-    assertEquals(LazyList(list*).toList, list)
+    assertEquals(LazyList(list*).toListRecursive, list)
   }
 
   test("LazyList.take")(genSmallInt ** genLazyList) { case n ** lazyList =>
-    assertEquals(lazyList.take(n).toList, lazyList.toList.take(n))
+    assertEquals(lazyList.take(n).toListRecursive, lazyList.toListRecursive.take(n))
   }
 
   test("LazyList.drop")(genSmallInt ** genLazyList) { case n ** lazyList =>
-    assertEquals(lazyList.drop(n).toList, lazyList.toList.drop(n))
+    assertEquals(lazyList.drop(n).toListRecursive, lazyList.toListRecursive.drop(n))
   }
 
   test("LazyList.takeWhile")(genSmallInt ** genLazyList) { case n ** lazyList =>
-    assertEquals(lazyList.takeWhile(_ != n).toList, lazyList.toList.takeWhile(_ != n))
+    assertEquals(lazyList.takeWhile(_ != n).toListRecursive, lazyList.toListRecursive.takeWhile(_ != n))
   }
 
   test("LazyList.forAll")(genSmallInt ** genLazyList) { case n ** lazyList =>
-    assertEquals(lazyList.forAll(_ != n), !lazyList.toList.contains(n))
+    assertEquals(lazyList.forAll(_ != n), !lazyList.toListRecursive.contains(n))
   }
 
   /*
@@ -77,41 +77,41 @@ class LazyListSuite extends PropSuite:
    */
 
   test("LazyList.ones")(genMidInt) { n =>
-    assertEquals(ones.take(n).toList, List.fill(n)(1))
+    assertEquals(ones.take(n).toListRecursive, List.fill(n)(1))
   }
 
   test("LazyList.continually")(genMidInt ** genMidInt) { case n ** a =>
-    assertEquals(continually(a).take(n).toList, List.fill(n)(a))
+    assertEquals(continually(a).take(n).toListRecursive, List.fill(n)(a))
   }
 
   test("LazyList.from")(genMidInt ** genMidInt) { case n ** a =>
-    assertEquals(from(a).take(n).toList, (a until (a + n)).toList)
+    assertEquals(from(a).take(n).toListRecursive, (a until (a + n)).toList)
   }
 
   test("LazyList.fib")(genLengthOfFibonacciSeq) { n =>
-    assertEquals(fibs.take(n).toList, theFirst21FibonacciNumbers.take(n).toList)
+    assertEquals(fibs.take(n).toListRecursive, theFirst21FibonacciNumbers.take(n).toList)
   }
 
   test("LazyList.unfold")(genMidInt) { n =>
     val genFirstNumbers: Int => Option[(Int, Int)] =
       m => if m > n then None else Some((m, m + 1))
-    assertEquals(unfold(1)(genFirstNumbers).toList, (1 to n).toList)
+    assertEquals(unfold(1)(genFirstNumbers).toListRecursive, (1 to n).toList)
   }
 
   test("LazyList.fibsViaUnfold")(genLengthOfFibonacciSeq) { n =>
-    assertEquals(fibsViaUnfold.take(n).toList, theFirst21FibonacciNumbers.take(n).toList)
+    assertEquals(fibsViaUnfold.take(n).toListRecursive, theFirst21FibonacciNumbers.take(n).toList)
   }
 
   test("LazyList.fromViaUnfold")(genMidInt ** genMidInt) { case n ** a =>
-    assertEquals(fromViaUnfold(a).take(n).toList, (a until (a + n)).toList)
+    assertEquals(fromViaUnfold(a).take(n).toListRecursive, (a until (a + n)).toList)
   }
 
   test("LazyList.continuallyViaUnfold")(genMidInt ** genMidInt) { case n ** a =>
-    assertEquals(continuallyViaUnfold(a).take(n).toList, List.fill(n)(a))
+    assertEquals(continuallyViaUnfold(a).take(n).toListRecursive, List.fill(n)(a))
   }
 
   test("LazyList.onesViaUnfold")(genMidInt) { n =>
-    assertEquals(onesViaUnfold.take(n).toList, List.fill(n)(1))
+    assertEquals(onesViaUnfold.take(n).toListRecursive, List.fill(n)(1))
   }
 
   /*
@@ -137,7 +137,7 @@ class LazyListSuite extends PropSuite:
    */
 
   test("LazyList.startsWith")(genLazyList ** genLazyList) { case list1 ** list2 =>
-    assertEquals(list1.startsWith(list2), list1.toList.startsWith(list2.toList))
+    assertEquals(list1.startsWith(list2), list1.toListRecursive.startsWith(list2.toListRecursive))
     assert(list1.startsWith(empty))
     assert(list1.startsWith(list1))
   }

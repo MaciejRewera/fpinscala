@@ -1,17 +1,41 @@
 package fpinscala.exercises.laziness
 
+import scala.annotation.tailrec
+import scala.collection.mutable.ListBuffer
+
 enum LazyList[+A]:
   case Empty
   case Cons(h: () => A, t: () => LazyList[A])
 
-  def toList: List[A] = ???
+  def toListRecursive: List[A] = this match
+    case Empty => Nil
+    case Cons(h, t) => h() :: t().toList
+
+  def toList: List[A] =
+    @tailrec
+    def loop(rest: LazyList[A], acc: List[A]): List[A] = rest match
+      case Cons(hd, tl) => loop(tl(), hd() :: acc)
+      case Empty => acc.reverse
+
+    loop(this, List.empty)
+
+  def toListQuick: List[A] =
+    val buffer = ListBuffer.empty[A]
+    @tailrec
+    def loop(rest: LazyList[A]): List[A] = rest match
+      case Cons(hd, tl) =>
+        buffer += hd()
+        loop(tl())
+      case Empty => buffer.toList
+
+    loop(this)
 
   def foldRight[B](z: => B)(f: (A, => B) => B): B = // The arrow `=>` in front of the argument type `B` means that the function `f` takes its second argument by name and may choose not to evaluate it.
     this match
       case Cons(h,t) => f(h(), t().foldRight(z)(f)) // If `f` doesn't evaluate its second argument, the recursion never occurs.
       case _ => z
 
-  def exists(p: A => Boolean): Boolean = 
+  def exists(p: A => Boolean): Boolean =
     foldRight(false)((a, b) => p(a) || b) // Here `b` is the unevaluated recursive step that folds the tail of the lazy list. If `p(a)` returns `true`, `b` will never be evaluated and the computation terminates early.
 
   @annotation.tailrec
@@ -36,7 +60,7 @@ enum LazyList[+A]:
 
 
 object LazyList:
-  def cons[A](hd: => A, tl: => LazyList[A]): LazyList[A] = 
+  def cons[A](hd: => A, tl: => LazyList[A]): LazyList[A] =
     lazy val head = hd
     lazy val tail = tl
     Cons(() => head, () => tail)
@@ -44,7 +68,7 @@ object LazyList:
   def empty[A]: LazyList[A] = Empty
 
   def apply[A](as: A*): LazyList[A] =
-    if as.isEmpty then empty 
+    if as.isEmpty then empty
     else cons(as.head, apply(as.tail*))
 
   val ones: LazyList[Int] = LazyList.cons(1, ones)
@@ -64,3 +88,13 @@ object LazyList:
   def continuallyViaUnfold[A](a: A): LazyList[A] = ???
 
   lazy val onesViaUnfold: LazyList[Int] = ???
+
+  @main def testLazyList(): Unit = {
+    val stream = LazyList(1, 2, 3, 4, 5)
+
+    println(s"stream: ${stream}")
+    println(s"toListRecursive: ${stream.toListRecursive}")
+    println(s"         toList: ${stream.toList}")
+    println(s"    toListQuick: ${stream.toListQuick}")
+
+  }

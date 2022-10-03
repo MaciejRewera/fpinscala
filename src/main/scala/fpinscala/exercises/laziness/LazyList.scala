@@ -38,7 +38,12 @@ enum LazyList[+A]:
   def exists(p: A => Boolean): Boolean =
     foldRight(false)((a, b) => p(a) || b) // Here `b` is the unevaluated recursive step that folds the tail of the lazy list. If `p(a)` returns `true`, `b` will never be evaluated and the computation terminates early.
 
-  @annotation.tailrec
+  @tailrec
+  final def existsRec(p: A => Boolean): Boolean = this match
+    case Empty => false
+    case Cons(hd, tl) => p(hd()) || tl().existsRec(p)
+
+  @tailrec
   final def find(f: A => Boolean): Option[A] = this match
     case Empty => None
     case Cons(h, t) => if (f(h())) Some(h()) else t().find(f)
@@ -90,11 +95,10 @@ object LazyList:
   lazy val onesViaUnfold: LazyList[Int] = ???
 
   @main def testLazyList(): Unit = {
-    val stream = LazyList(1, 2, 3, 4, 5)
+    val stream = LazyList(1, 1, 2, 3, 4, 5)
 
     println(s"stream: ${stream}")
-    println(s"toListRecursive: ${stream.toListRecursive}")
-    println(s"         toList: ${stream.toList}")
-    println(s"    toListQuick: ${stream.toListQuick}")
+    println(s"exists: ${stream.exists(a => { println("hi"); a % 2 == 0 })}")
+    println(s"existsRec: ${stream.existsRec(a => { println("hi"); a % 2 == 0 })}")
 
   }

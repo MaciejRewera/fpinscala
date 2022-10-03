@@ -39,7 +39,7 @@ object Either:
   def traverse2[E,A,B](list: List[A])(f: A => Either[E, B]): Either[E, List[B]] =
     list.foldRight[Either[E, List[B]]](Right(List.empty)) { (x, acc) => f(x).map2(acc)(_ :: _) }
 
-  def sequence[E,A](es: List[Either[E,A]]): Either[E,List[A]] = traverse(es)(identity)
+  def sequence[E,A](list: List[Either[E,A]]): Either[E,List[A]] = traverse(list)(identity)
 
   def mean(xs: IndexedSeq[Double]): Either[String, Double] = 
     if xs.isEmpty then
@@ -55,22 +55,66 @@ object Either:
     try Right(a)
     catch case NonFatal(t) => Left(t)
 
-  def map2All[E, A, B, C](a: Either[List[E], A], b: Either[List[E], B], f: (A, B) => C): Either[List[E], C] = ???
+  def catchNonFatalAll[A](a: => A): Either[List[Throwable], A] =
+    try Right(a)
+    catch case NonFatal(t) => Left(List(t))
 
-  def traverseAll[E, A, B](es: List[A], f: A => Either[List[E], B]): Either[List[E], List[B]] = ???
+  def map2All[E, A, B, C](a: Either[List[E], A], b: Either[List[E], B])(f: (A, B) => C): Either[List[E], C] = (a, b) match
+    case (Left(e1), Left(e2))   => Left(e1 ::: e2)
+    case (Right(v1), Right(v2)) => Right(f(v1, v2))
+    case (Left(e1), _)          => Left(e1)
+    case (_, Left(e2))          => Left(e2)
 
-  def sequenceAll[E, A](es: List[Either[List[E], A]]): Either[List[E], List[A]] = ???
+  def traverseAll[E, A, B](list: List[A])(f: A => Either[List[E], B]): Either[List[E], List[B]] =
+    list.foldRight[Either[List[E], List[B]]](Right(Nil)) { (x, acc) => map2All(f(x), acc)(_ :: _) }
+
+  def sequenceAll[E, A](list: List[Either[List[E], A]]): Either[List[E], List[A]] = traverseAll(list)(identity)
+
+  case class Person(name: Name, age: Age)
+  sealed case class Name( value: String)
+  sealed case class Age( value: Int)
+
+  def mkName(name: String): Either[String, Name] =
+    if (name == "" || name == null) Left("Name is empty.")
+    else Right( Name(name))
+
+  def mkAge(age: Int): Either[String, Age] =
+    if age < 0 then Left("Age is out of range.")
+    else Right( Age(age))
+
+  def mkPerson(name: String, age: Int): Either[String, Person] =
+    mkName(name).map2(mkAge(age))(Person(_, _))
+
+  def mkName2(name: String): Either[List[String], Name] =
+    if (name == "" || name == null) Left(List("Name is empty."))
+    else Right( Name(name))
+
+  def mkAge2(age: Int): Either[List[String], Age] =
+    if age < 0 then Left(List("Age is out of range."))
+    else Right( Age(age))
+
+  def mkPerson2(name: String, age: Int): Either[List[String], Person] =
+    map2All(mkName2(name), mkAge2(age))(Person(_, _))
 
   @main def testEither = {
 
-    println(s"flatten (Left(nope)): ${Left("nope").flatten}")
-    println(s"flatten (Right(1)): ${Right(1).flatten}")
-    println(s"flatten (Right(Left(nope))): ${Right(Left("nope")).flatten}")
-    println(s"flatten (Right(Right(1))): ${Right(Right(1)).flatten}")
-    println(s"flatten (Left(Left(nope))): ${Left(Left("nope")).flatten}")
-    println(s"flatten (Right(Right(Right(1)))): ${Right(Right(Right(1))).flatten}")
-    println(s"2xflatten (Right(Right(Right(1)))): ${Right(Right(Right(1))).flatten.flatten}")
+    println(s" mkPerson: ${mkPerson("Mike", 23)}")
+    println(s" mkPerson: ${mkPerson("", 23)}")
+    println(s" mkPerson: ${mkPerson("Mike", -1)}")
+    println(s" mkPerson: ${mkPerson("", -1)}")
 
-    println(s"sequence: ${sequence(List(Right(1), Right(2), Right(3)))}")
-    println(s"sequence: ${sequence(List(Right(1), Left("Nope"), Right(3)))}")
+    println(s"mkPerson2: ${mkPerson2("Mike", 23)}")
+    println(s"mkPerson2: ${mkPerson2("", 23)}")
+    println(s"mkPerson2: ${mkPerson2("Mike", -1)}")
+    println(s"mkPerson2: ${mkPerson2("", -1)}")
+
+    println()
+    println(s"traverseAll: ${traverseAll(List("1", "2", "3"))(i => catchNonFatalAll(i + "ms"))}")
+    println(s"traverseAll: ${traverseAll(List("1", "2", "3"))(i => catchNonFatalAll(i.toInt))}")
+    println(s"traverseAll: ${traverseAll(List("1", "2", "w"))(i => catchNonFatalAll(i.toInt))}")
+    println(s"traverseAll: ${traverseAll(List("1", "q", "w"))(i => catchNonFatalAll(i.toInt))}")
+
+    println(s"sequenceAll: ${sequenceAll(List(Right(1), Right(2), Right(3)))}")
+    println(s"sequenceAll: ${sequenceAll(List(Right("1"), Left(List("nope")), Right("3")))}")
+    println(s"sequenceAll: ${sequenceAll(List(Right("1"), Left(List("nope")), Left(List("another nope"))))}")
   }

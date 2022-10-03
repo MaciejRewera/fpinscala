@@ -16,6 +16,11 @@ enum Either[+E,+A]:
     case Left(e) => Left(e)
     case Right(v) => f(v)
 
+  def flatten: Either[E, A] = this match
+    case Left(e: Either[E, A]) => e
+    case Right(e: Either[E, A]) => e
+    case e => e
+
   def orElse[EE >: E, B >: A](b: => Either[EE, B]): Either[EE, B] = this match
     case Left(_) => b
     case Right(v) => Right(v)
@@ -58,10 +63,13 @@ object Either:
 
   @main def testEither = {
 
-    println(s" traverse:  ${traverse(List("1", "2", "3"))(i => catchNonFatal(i + "ms"))}")
-    println(s"traverse2:  ${traverse2(List("1", "2", "3"))(i => catchNonFatal(i + "ms"))}")
-    println(s" traverse:  ${traverse(List("1", "q"))(i => catchNonFatal(i.toInt))}")
-    println(s"traverse2:  ${traverse2(List("1", "q"))(i => catchNonFatal(i.toInt))}")
+    println(s"flatten (Left(nope)): ${Left("nope").flatten}")
+    println(s"flatten (Right(1)): ${Right(1).flatten}")
+    println(s"flatten (Right(Left(nope))): ${Right(Left("nope")).flatten}")
+    println(s"flatten (Right(Right(1))): ${Right(Right(1)).flatten}")
+    println(s"flatten (Left(Left(nope))): ${Left(Left("nope")).flatten}")
+    println(s"flatten (Right(Right(Right(1)))): ${Right(Right(Right(1))).flatten}")
+    println(s"2xflatten (Right(Right(Right(1)))): ${Right(Right(Right(1))).flatten.flatten}")
 
     println(s"sequence: ${sequence(List(Right(1), Right(2), Right(3)))}")
     println(s"sequence: ${sequence(List(Right(1), Left("Nope"), Right(3)))}")

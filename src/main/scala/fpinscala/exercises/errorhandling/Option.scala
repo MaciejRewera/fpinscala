@@ -23,6 +23,10 @@ enum Option[+A]:
 
   def filter(f: A => Boolean): Option[A] = flatMap(a => if f(a) then Some(a) else None)
 
+  def flatten: Option[A] = this match
+    case Some(a: Option[A]) => a
+    case o => o
+
 object Option:
 
   def failingFn(i: Int): Int =
@@ -81,4 +85,11 @@ object Option:
 
     println(s"sequenceViaTraverse: ${sequenceViaTraverse(List(Some(1), Some(2), Some(3)))}")
     println(s"sequenceViaTraverse: ${sequenceViaTraverse(List(Some(1), None, Some(3)))}")
+
+    println(s"flatten (None): ${None.flatten}")
+    println(s"flatten (Some(1)): ${Some(1).flatten}")
+    println(s"flatten (Some(None)): ${Some(None).flatten}")
+    println(s"flatten (Some(Some(1))): ${Some(Some(1)).flatten}")
+    println(s"flatten (Some(Some(Some(1)))): ${Some(Some(Some(1))).flatten}")
+    println(s"2xflatten (Some(Some(Some(1)))): ${Some(Some(Some(1))).flatten.flatten}")
   }

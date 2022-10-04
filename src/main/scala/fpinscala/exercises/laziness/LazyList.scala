@@ -36,7 +36,9 @@ enum LazyList[+A]:
     case Cons(h, t) if n > 0 => cons(h(), t().take(n - 1))
     case _ => empty
 
-  def takeWhile(p: A => Boolean): LazyList[A] = ???
+  def takeWhile(p: A => Boolean): LazyList[A] = this match
+    case Cons(h, t) if p(h()) => cons(h(), t().takeWhile(p))
+    case _ => empty
 
   @tailrec
   final def drop(n: Int): LazyList[A] = this match
@@ -107,13 +109,13 @@ object LazyList:
       println(s"Evaluating num: $num")
       num
     }
-    val stream: LazyList[Int] = cons(func(1), cons(func(2), cons(func(3), cons(func(4), cons(func(5), empty)))))
+    val stream: LazyList[Int] = cons(func(1), cons(func(3), cons(func(7), cons(func(4), cons(func(5), empty)))))
 
-    println(s"drop(3) : ${stream.drop(3)}")
-    println(s"drop(3) : ${stream.drop(3).toList}")
-    println(s"drop(6) : ${stream.drop(6).toList}")
-    println(s"drop(7) : ${stream.drop(7).toList}")
-    println(s"drop(0) : ${stream.drop(0).toList}")
-    println(s"drop(-1): ${stream.drop(-1).toList}")
+    val isOdd = (_: Int) % 2 != 0
+    val isEven = (_: Int) % 2 == 0
+
+    println(s"takeWhile : ${stream.takeWhile(isOdd)}")
+    println(s"takeWhile : ${stream.takeWhile(isOdd).toList}")
+    println(s"takeWhile : ${stream.takeWhile(isEven).toList}")
 
   }

@@ -1,5 +1,7 @@
 package fpinscala.exercises.laziness
 
+import fpinscala.exercises.laziness.LazyList.{cons, empty}
+
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
 
@@ -30,22 +32,21 @@ enum LazyList[+A]:
 
     loop(this)
 
+  def take(n: Int): LazyList[A] = this match
+    case Cons(h, t) if n > 0 => cons(h(), t().take(n - 1))
+    case _ => empty
+
+  def drop(n: Int): LazyList[A] = ???
+
+  def takeWhile(p: A => Boolean): LazyList[A] = ???
+
   def foldRight[B](z: => B)(f: (A, => B) => B): B = // The arrow `=>` in front of the argument type `B` means that the function `f` takes its second argument by name and may choose not to evaluate it.
     this match
       case Cons(h,t) => f(h(), t().foldRight(z)(f)) // If `f` doesn't evaluate its second argument, the recursion never occurs.
       case _ => z
 
-  @tailrec
-  final def foldLeft[B](z: => B)(f: (B, A) => B): B =this match
-      case Cons(h, t) => t().foldLeft(f(z, h()))(f)
-      case _ => z
-
   def exists(p: A => Boolean): Boolean =
     foldRight(false)((a, b) => p(a) || b) // Here `b` is the unevaluated recursive step that folds the tail of the lazy list. If `p(a)` returns `true`, `b` will never be evaluated and the computation terminates early.
-
-  def existsLeft(p: A => Boolean): Boolean = this match
-    case Empty => false
-    case Cons(h, t) => if p(h()) then true else t().exists(p)
 
   @tailrec
   final def existsRec(p: A => Boolean): Boolean = this match
@@ -56,12 +57,6 @@ enum LazyList[+A]:
   final def find(f: A => Boolean): Option[A] = this match
     case Empty => None
     case Cons(h, t) => if (f(h())) Some(h()) else t().find(f)
-
-  def take(n: Int): LazyList[A] = ???
-
-  def drop(n: Int): LazyList[A] = ???
-
-  def takeWhile(p: A => Boolean): LazyList[A] = ???
 
   def forAll(p: A => Boolean): Boolean = ???
 
@@ -104,32 +99,18 @@ object LazyList:
   lazy val onesViaUnfold: LazyList[Int] = ???
 
   @main def testLazyList(): Unit = {
-    val stream = LazyList(1, 1, 2, 3, 3)
-
-    val func = (a: Int) => {
-      println(s"hi $a")
-      val res = a % 2 == 0
-      res
+    def func(n: => Int): Int = {
+      lazy val num = n
+      println(s"Evaluating num: $num")
+      num
     }
+    val stream: LazyList[Int] = cons(func(1), cons(func(2), cons(func(3), cons(func(4), cons(func(5), empty)))))
 
-    val funcLeft: (Int, Int) => Int = (acc, a) => {
-      println(s"hi $a")
-      val res = a + acc
-      println(s"hi $a : ${res - a}")
-      res
-    }
-    val funcRight: (Int, => Int) => Int = (a, acc) => {
-      println(s"hi $a")
-      val res = a + acc
-      println(s"hi $a : ${res - a}")
-      res
-    }
-
-    println(s"stream: ${stream.toList}")
-    println(s"exists: ${stream.exists(func)}")
-    println(s"existsRec: ${stream.existsRec(func)}")
-    println(s"existsLeft: ${stream.existsLeft(func)}")
-    println(s"foldLeft: ${stream.foldLeft(0)(funcLeft)}")
-    println(s"foldRight: ${stream.foldRight(0)(funcRight)}")
+    println(s"take(3) : ${stream.take(3)}")
+    println(s"take(3) : ${stream.take(3).toList}")
+    println(s"take(6) : ${stream.take(6).toList}")
+    println(s"take(7) : ${stream.take(7).toList}")
+    println(s"take(0) : ${stream.take(0).toList}")
+    println(s"take(-1): ${stream.take(-1).toList}")
 
   }

@@ -36,9 +36,12 @@ enum LazyList[+A]:
     case Cons(h, t) if n > 0 => cons(h(), t().take(n - 1))
     case _ => empty
 
-  def drop(n: Int): LazyList[A] = ???
-
   def takeWhile(p: A => Boolean): LazyList[A] = ???
+
+  @tailrec
+  final def drop(n: Int): LazyList[A] = this match
+    case Cons(_, t) if n > 0 => t().drop(n - 1)
+    case _ => this
 
   def foldRight[B](z: => B)(f: (A, => B) => B): B = // The arrow `=>` in front of the argument type `B` means that the function `f` takes its second argument by name and may choose not to evaluate it.
     this match
@@ -106,11 +109,11 @@ object LazyList:
     }
     val stream: LazyList[Int] = cons(func(1), cons(func(2), cons(func(3), cons(func(4), cons(func(5), empty)))))
 
-    println(s"take(3) : ${stream.take(3)}")
-    println(s"take(3) : ${stream.take(3).toList}")
-    println(s"take(6) : ${stream.take(6).toList}")
-    println(s"take(7) : ${stream.take(7).toList}")
-    println(s"take(0) : ${stream.take(0).toList}")
-    println(s"take(-1): ${stream.take(-1).toList}")
+    println(s"drop(3) : ${stream.drop(3)}")
+    println(s"drop(3) : ${stream.drop(3).toList}")
+    println(s"drop(6) : ${stream.drop(6).toList}")
+    println(s"drop(7) : ${stream.drop(7).toList}")
+    println(s"drop(0) : ${stream.drop(0).toList}")
+    println(s"drop(-1): ${stream.drop(-1).toList}")
 
   }

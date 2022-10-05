@@ -89,6 +89,8 @@ enum LazyList[+A]:
 
   def map[B](f: A => B): LazyList[B] = foldRight(empty)((a, acc) => cons(f(a), acc))
 
+  def filter(p: A => Boolean): LazyList[A] = foldRight(empty)((a, acc) => if p(a) then cons(a, acc) else acc)
+
   def startsWith[B](s: LazyList[B]): Boolean = ???
 
 
@@ -133,11 +135,9 @@ object LazyList:
 
     val stream: LazyList[Int] = cons(func(1), cons(func(2), cons(func(3), cons(func(4), cons(func(5), empty)))))
 
-    println(s"mapRecursive(_ + 1): ${stream.mapRecursive(_ + 1)}")
-    println(s"map(_ + 1)         : ${stream.map(_ + 1)}")
+    println(s"filter(isEven): ${stream.filter(isEven)}")
+    println(s"filter(isOdd) : ${stream.filter(isOdd)}")
+    println(s"filter(isEven): ${stream.filter(isEven).toList}")
+    println(s"filter(isOdd) : ${stream.filter(isOdd).toList}")
 
-    println(s"mapRecursive(_ + 1).toList: ${stream.mapRecursive(_ + 1).toList}")
-    println(s"map(_ + 1).toList         : ${stream.map(_ + 1).toList}")
-
-    println(s"List.map(_ + 1): ${stream.toList}")
   }

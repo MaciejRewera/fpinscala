@@ -40,6 +40,9 @@ enum LazyList[+A]:
     case Cons(h, t) if p(h()) => cons(h(), t().takeWhile(p))
     case _ => empty
 
+  def takeWhileViaFoldRight(p: A => Boolean): LazyList[A] =
+    foldRight(empty)((a, acc) => if p(a) then cons(a, acc) else empty)
+
   @tailrec
   final def drop(n: Int): LazyList[A] = this match
     case Cons(_, t) if n > 0 => t().drop(n - 1)
@@ -119,9 +122,12 @@ object LazyList:
     val isOdd = (_: Int) % 2 != 0
     val isEven = (_: Int) % 2 == 0
 
-    val stream: LazyList[Int] = cons(func(1), cons(func(3), cons(func(7), cons(func(13), cons(func(5), empty)))))
+    val stream: LazyList[Int] = cons(func(1), cons(func(3), cons(func(7), cons(func(4), cons(func(5), empty)))))
 
-    println(s"forAllViaFoldRight : ${stream.forAllViaFoldRight(isEven)}")
-    println(s"forAllViaFoldRight : ${stream.forAllViaFoldRight(isOdd)}")
+    println(s"takeWhileViaFoldRight : ${stream.takeWhileViaFoldRight(isOdd)}")
+    println(s"takeWhileViaFoldRight : ${stream.takeWhileViaFoldRight(isOdd).toList}")
+    println(s"takeWhileViaFoldRight : ${stream.takeWhileViaFoldRight(isEven).toList}")
 
+    println(s"takeWhile : ${stream.takeWhile(isOdd).toList}")
+    println(s"takeWhile : ${stream.takeWhile(isEven).toList}")
   }

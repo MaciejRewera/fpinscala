@@ -112,7 +112,11 @@ object LazyList:
 
   val ones: LazyList[Int] = LazyList.cons(1, ones)
 
-  def continually[A](a: A): LazyList[A] = ???
+  def continually[A](a: A): LazyList[A] = cons(a, continually(a))
+
+  def continually2[A](a: => A): LazyList[A] =
+    lazy val single : LazyList[A] = cons(a, single)
+    single
 
   def from(n: Int): LazyList[Int] = ???
 
@@ -129,7 +133,7 @@ object LazyList:
   lazy val onesViaUnfold: LazyList[Int] = ???
 
   @main def testLazyList(): Unit = {
-    def func(n: => Int): Int = {
+    def func[A](n: => A): A = {
       lazy val num = n
       println(s"Evaluating num: $num")
       num
@@ -137,11 +141,16 @@ object LazyList:
     val isOdd = (_: Int) % 2 != 0
     val isEven = (_: Int) % 2 == 0
 
-    val stream: LazyList[Int] = cons(func(1), cons(func(2), cons(func(3), cons(func(4), cons(func(5), empty)))))
-    val stream2: LazyList[Int] = cons(func(11), cons(func(12), cons(func(13), cons(func(14), cons(func(15), empty)))))
+    println()
+    println(s"continually2: ${continually2(func('a')).take(7)}")
+    println(s"continually2: ${continually2(func('a')).take(7)}")
+    println(s"continually2: ${continually2(func('a')).take(7)}")
+    println(s"continually2.toList: ${continually2(func('a')).take(7).toList}")
 
     println()
-    println(s"flatMap: ${stream.flatMap(a => LazyList(a + 1).flatMap(b => LazyList(b * 2)))}")
-    println(s"flatMap.toList: ${stream.flatMap(a => LazyList(a + 1).flatMap(b => LazyList(b * 2))).toList}")
+    println(s"continually: ${continually(func('a')).take(7)}")
+    println(s"continually: ${continually(func('a')).take(7)}")
+    println(s"continually: ${continually(func('a')).take(7)}")
+    println(s"continually.toList: ${continually(func('a')).take(7).toList}")
 
   }

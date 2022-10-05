@@ -79,7 +79,7 @@ class LazyListSuite extends PropSuite:
   }
 
   test("LazyList.continually")(genMidInt ** genMidInt) { case n ** a =>
-    assertEquals(continually(a).take(n).toListRecursive, List.fill(n)(a))
+    assertEquals(continually2(a).take(n).toListRecursive, List.fill(n)(a))
   }
 
   test("LazyList.from")(genMidInt ** genMidInt) { case n ** a =>

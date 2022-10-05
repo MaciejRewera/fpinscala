@@ -68,6 +68,9 @@ enum LazyList[+A]:
     case Cons(h, t) => if !p(h()) then false else t().forAll(p)
     case Empty => true
 
+  final def forAllViaFoldRight(p: A => Boolean): Boolean =
+    foldRight(true)((a, res) => p(a) && res)
+
   def headOption: Option[A] = ???
 
   // 5.7 map, filter, append, flatmap using foldRight. Part of the exercise is
@@ -118,7 +121,7 @@ object LazyList:
 
     val stream: LazyList[Int] = cons(func(1), cons(func(3), cons(func(7), cons(func(13), cons(func(5), empty)))))
 
-    println(s"forAll : ${stream.forAll(isEven)}")
-    println(s"forAll : ${stream.forAll(isOdd)}")
+    println(s"forAllViaFoldRight : ${stream.forAllViaFoldRight(isEven)}")
+    println(s"forAllViaFoldRight : ${stream.forAllViaFoldRight(isOdd)}")
 
   }

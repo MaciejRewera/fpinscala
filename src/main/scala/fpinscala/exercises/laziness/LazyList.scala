@@ -63,7 +63,10 @@ enum LazyList[+A]:
     case Empty => None
     case Cons(h, t) => if (f(h())) Some(h()) else t().find(f)
 
-  def forAll(p: A => Boolean): Boolean = ???
+  @tailrec
+  final def forAll(p: A => Boolean): Boolean = this match
+    case Cons(h, t) => if !p(h()) then false else t().forAll(p)
+    case Empty => true
 
   def headOption: Option[A] = ???
 
@@ -109,13 +112,13 @@ object LazyList:
       println(s"Evaluating num: $num")
       num
     }
-    val stream: LazyList[Int] = cons(func(1), cons(func(3), cons(func(7), cons(func(4), cons(func(5), empty)))))
 
     val isOdd = (_: Int) % 2 != 0
     val isEven = (_: Int) % 2 == 0
 
-    println(s"takeWhile : ${stream.takeWhile(isOdd)}")
-    println(s"takeWhile : ${stream.takeWhile(isOdd).toList}")
-    println(s"takeWhile : ${stream.takeWhile(isEven).toList}")
+    val stream: LazyList[Int] = cons(func(1), cons(func(3), cons(func(7), cons(func(13), cons(func(5), empty)))))
+
+    println(s"forAll : ${stream.forAll(isEven)}")
+    println(s"forAll : ${stream.forAll(isOdd)}")
 
   }

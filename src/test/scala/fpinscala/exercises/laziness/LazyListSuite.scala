@@ -66,11 +66,11 @@ class LazyListSuite extends PropSuite:
     assertEquals(lazyList.filter(_ != n).toList, lazyList.toList.filter(_ != n))
   }
 
-  /*
   test("LazyList.append")(genLazyList ** genLazyList) { case first ** second =>
     assertEquals(first.append(second).toList, first.toList ++ second.toList)
   }
 
+  /*
   test("LazyList.flatMap")(genSmallInt ** genLazyList) { case n ** lazyList =>
     assertEquals(lazyList.flatMap(a => LazyList(a + n)).toList, lazyList.toList.flatMap(a => List(a + n)))
   }

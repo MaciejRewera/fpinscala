@@ -74,7 +74,11 @@ enum LazyList[+A]:
   final def forAllViaFoldRight(p: A => Boolean): Boolean =
     foldRight(true)((a, res) => p(a) && res)
 
-  def headOption: Option[A] = ???
+  def headOptionRecursive: Option[A] = this match
+    case Cons(h, t) => Some(h())
+    case _ => None
+
+  def headOption: Option[A] = foldRight(Option.empty[A])((a, _) => Some(a))
 
   // 5.7 map, filter, append, flatmap using foldRight. Part of the exercise is
   // writing your own function signatures.
@@ -118,16 +122,20 @@ object LazyList:
       println(s"Evaluating num: $num")
       num
     }
-
     val isOdd = (_: Int) % 2 != 0
     val isEven = (_: Int) % 2 == 0
 
     val stream: LazyList[Int] = cons(func(1), cons(func(3), cons(func(7), cons(func(4), cons(func(5), empty)))))
 
-    println(s"takeWhileViaFoldRight : ${stream.takeWhileViaFoldRight(isOdd)}")
-    println(s"takeWhileViaFoldRight : ${stream.takeWhileViaFoldRight(isOdd).toList}")
-    println(s"takeWhileViaFoldRight : ${stream.takeWhileViaFoldRight(isEven).toList}")
+    println(s"headOption : ${stream.headOption}")
+    println(s"headOption : ${stream.drop(1).headOption}")
+    println(s"headOption : ${cons(func(123), empty).headOption}")
+    println(s"empty.headOption : ${empty.headOption}")
+    println()
 
-    println(s"takeWhile : ${stream.takeWhile(isOdd).toList}")
-    println(s"takeWhile : ${stream.takeWhile(isEven).toList}")
+    println(s"headOptionRecursive : ${stream.headOptionRecursive}")
+    println(s"headOptionRecursive : ${stream.drop(1).headOptionRecursive}")
+    println(s"headOptionRecursive : ${cons(func(123), empty).headOptionRecursive}")
+    println(s"empty.headOptionRecursive : ${empty.headOptionRecursive}")
+
   }

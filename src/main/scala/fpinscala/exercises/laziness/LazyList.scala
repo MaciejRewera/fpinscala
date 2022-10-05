@@ -15,11 +15,11 @@ enum LazyList[+A]:
 
   def toList: List[A] =
     @tailrec
-    def loop(rest: LazyList[A], acc: List[A]): List[A] = rest match
-      case Cons(hd, tl) => loop(tl(), hd() :: acc)
+    def loop(acc: List[A], rest: LazyList[A]): List[A] = rest match
+      case Cons(hd, tl) => loop(hd() :: acc, tl())
       case Empty => acc.reverse
 
-    loop(this, List.empty)
+    loop(List.empty, this)
 
   def toListQuick: List[A] =
     val buffer = ListBuffer.empty[A]

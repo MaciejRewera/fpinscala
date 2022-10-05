@@ -89,6 +89,8 @@ enum LazyList[+A]:
 
   def map[B](f: A => B): LazyList[B] = foldRight(empty)((a, acc) => cons(f(a), acc))
 
+  def flatMap[B](f: A => LazyList[B]): LazyList[B] = foldRight(empty[B])((a, acc) => f(a).append(acc))
+
   def filter(p: A => Boolean): LazyList[A] = foldRight(empty)((a, acc) => if p(a) then cons(a, acc) else acc)
 
   def append[A2 >: A](other: => LazyList[A2]): LazyList[A2] = foldRight(other)(cons)
@@ -139,12 +141,7 @@ object LazyList:
     val stream2: LazyList[Int] = cons(func(11), cons(func(12), cons(func(13), cons(func(14), cons(func(15), empty)))))
 
     println()
-    println(s"append: ${stream.append(stream2)}")
-    println(s"append(rev): ${stream2.append(stream)}")
-    println(s"append(self): ${stream.append(stream)}")
-
-    println(s"append.toList: ${stream.append(stream2).toList}")
-    println(s"append(rev).toList: ${stream2.append(stream).toList}")
-    println(s"append(self).toList: ${stream.append(stream).toList}")
+    println(s"flatMap: ${stream.flatMap(a => LazyList(a + 1).flatMap(b => LazyList(b * 2)))}")
+    println(s"flatMap.toList: ${stream.flatMap(a => LazyList(a + 1).flatMap(b => LazyList(b * 2))).toList}")
 
   }

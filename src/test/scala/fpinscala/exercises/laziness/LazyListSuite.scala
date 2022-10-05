@@ -58,11 +58,11 @@ class LazyListSuite extends PropSuite:
     assertEquals(lazyList.forAll(_ != n), !lazyList.toListRecursive.contains(n))
   }
 
-  /*
   test("LazyList.map")(genSmallInt ** genLazyList) { case n ** lazyList =>
     assertEquals(lazyList.map(_ + n).toList, lazyList.toList.map(_ + n))
   }
 
+  /*  
   test("LazyList.filter")(genSmallInt ** genLazyList) { case n ** lazyList =>
     assertEquals(lazyList.filter(_ != n).toList, lazyList.toList.filter(_ != n))
   }

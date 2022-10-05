@@ -83,6 +83,12 @@ enum LazyList[+A]:
   // 5.7 map, filter, append, flatmap using foldRight. Part of the exercise is
   // writing your own function signatures.
 
+  def mapRecursive[B](f: A => B): LazyList[B] = this match
+    case Cons(h, t) => cons(f(h()), t().map(f))
+    case Empty => empty
+
+  def map[B](f: A => B): LazyList[B] = foldRight(empty)((a, acc) => cons(f(a), acc))
+
   def startsWith[B](s: LazyList[B]): Boolean = ???
 
 
@@ -125,17 +131,13 @@ object LazyList:
     val isOdd = (_: Int) % 2 != 0
     val isEven = (_: Int) % 2 == 0
 
-    val stream: LazyList[Int] = cons(func(1), cons(func(3), cons(func(7), cons(func(4), cons(func(5), empty)))))
+    val stream: LazyList[Int] = cons(func(1), cons(func(2), cons(func(3), cons(func(4), cons(func(5), empty)))))
 
-    println(s"headOption : ${stream.headOption}")
-    println(s"headOption : ${stream.drop(1).headOption}")
-    println(s"headOption : ${cons(func(123), empty).headOption}")
-    println(s"empty.headOption : ${empty.headOption}")
-    println()
+    println(s"mapRecursive(_ + 1): ${stream.mapRecursive(_ + 1)}")
+    println(s"map(_ + 1)         : ${stream.map(_ + 1)}")
 
-    println(s"headOptionRecursive : ${stream.headOptionRecursive}")
-    println(s"headOptionRecursive : ${stream.drop(1).headOptionRecursive}")
-    println(s"headOptionRecursive : ${cons(func(123), empty).headOptionRecursive}")
-    println(s"empty.headOptionRecursive : ${empty.headOptionRecursive}")
+    println(s"mapRecursive(_ + 1).toList: ${stream.mapRecursive(_ + 1).toList}")
+    println(s"map(_ + 1).toList         : ${stream.map(_ + 1).toList}")
 
+    println(s"List.map(_ + 1): ${stream.toList}")
   }

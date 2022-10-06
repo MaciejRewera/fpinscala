@@ -112,7 +112,10 @@ enum LazyList[+A]:
     case _ => None
   }
 
-  def zipWith[B, C](other: LazyList[B])(f: (A, B) => C): LazyList[C] = ???
+  def zipWith[B, C](other: LazyList[B])(f: (A, B) => C): LazyList[C] = LazyList.unfold((this, other)) {
+    case (Cons(h1, t1), Cons(h2, t2)) => Some(f(h1(), h2()) -> (t1(), t2()))
+    case (_, _) => None
+  }
 
   def zipAll[B](other: LazyList[B]): LazyList[(Option[A], Option[B])] = ???
 
@@ -169,13 +172,10 @@ object LazyList:
       println(s"Evaluating num: $num")
       num
     }
-    val isOdd = (_: Int) % 2 != 0
-    val isEven = (_: Int) % 2 == 0
+    val stream1: LazyList[Int] = cons(func(1), cons(func(3), cons(func(7), cons(func(4), cons(func(5), empty)))))
+    val stream2: LazyList[Int] = cons(func(1), cons(func(3), cons(func(7), cons(func(4), empty))))
 
-    val stream: LazyList[Int] = cons(func(1), cons(func(3), cons(func(7), cons(func(4), cons(func(5), empty)))))
-
-    println(s"takeWhileViaUnfold : ${stream.takeWhileViaUnfold(isOdd)}")
-    println(s"takeWhileViaUnfold : ${stream.takeWhileViaUnfold(isOdd).toList}")
-    println(s"takeWhileViaUnfold : ${stream.takeWhileViaUnfold(isEven).toList}")
+    println(s"zipWith: ${stream1.zipWith(stream2)(_ + _)}")
+    println(s"zipWith: ${stream1.zipWith(stream2)(_ + _).toList}")
 
   }

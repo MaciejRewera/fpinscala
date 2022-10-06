@@ -136,6 +136,18 @@ enum LazyList[+A]:
 
   def hasSubsequence[A](sub: LazyList[A]): Boolean = tails.exists(_.startsWith(sub))
 
+  // This is the same solution as in answers, but they're both strict (!!!)
+  def scanRight[B](z: B)(f: (A, => B) => B): LazyList[B] =
+    foldRight((z, LazyList(z))) { (a, acc) =>
+      lazy val (previousSingleResult, accumulatedResults) = acc
+
+      val newSingleResult = f(a, previousSingleResult)
+      (newSingleResult, cons(newSingleResult, accumulatedResults))
+    }._2
+
+  def scanRightRecomputing[B](z: => B)(f: (A, => B) => B): LazyList[B] =
+    tails.map(_.foldRight(z)(f))
+
 
 object LazyList:
   def cons[A](hd: => A, tl: => LazyList[A]): LazyList[A] =
@@ -182,15 +194,25 @@ object LazyList:
   lazy val onesViaUnfold: LazyList[Int] = unfold(())(_ => Some((1, ())))
 
   @main def testLazyList(): Unit = {
-    def func(n: => Int): Int = {
+    def gen(n: => Int): Int = {
       lazy val num = n
       println(s"Evaluating num: $num")
       num
     }
-    val stream1: LazyList[Int] = cons(func(1), cons(func(2), cons(func(3), cons(func(4), cons(func(5), empty)))))
+    def func(n1: Int, n2: => Int): Int = {
+      lazy val res = n1 + n2
+      println(s"Executing func. res = $res")
+      res
+    }
 
-    println(s"tails: ${stream1.tails}")
-    println(s"tails: ${stream1.tails.toList}")
-    println(s"tails: ${stream1.tails.map(_.toList).toList}")
+    val stream1: LazyList[Int] = cons(gen(1), cons(gen(2), cons(gen(3), cons(gen(4), cons(gen(5), empty)))))
+
+    println(s"scanRight: ${stream1.scanRight(0)(func)}")
+    println(s"scanRight: ${stream1.scanRight(0)(func).toList}")
+    println()
+    println(s"scanRightRecomputing: ${stream1.scanRightRecomputing(0)(func)}")
+    println(s"scanRightRecomputing: ${stream1.scanRightRecomputing(0)(func).toList}")
+    println()
+    println(s"tails: ${stream1.tails.toList.map(_.toList)}")
 
   }

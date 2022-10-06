@@ -129,7 +129,9 @@ object LazyList:
       cons(current, loop(next, current + next))
     loop(0, 1)
 
-  def unfold[A, S](state: S)(f: S => Option[(A, S)]): LazyList[A] = ???
+  def unfold[A, S](state: S)(f: S => Option[(A, S)]): LazyList[A] = f(state) match
+    case None => empty
+    case Some((value, newState)) => cons(value, unfold(newState)(f))
 
   lazy val fibsViaUnfold: LazyList[Int] = ???
 
@@ -140,13 +142,10 @@ object LazyList:
   lazy val onesViaUnfold: LazyList[Int] = ???
 
   @main def testLazyList(): Unit = {
+    val func: Int => Option[(Int, Int)] = (n: Int) => if n > 100 then None else Some((n, n + 2))
 
     println()
-    println(s"fibs.take(0): ${fibs.take(0)}")
-    println(s"fibs.take(0).toList: ${fibs.take(0).toList}")
-    println(s"fibs.take(3): ${fibs.take(3)}")
-    println(s"fibs.take(3).toList: ${fibs.take(3).toList}")
-    println(s"fibs.take(21): ${fibs.take(21)}")
-    println(s"fibs.take(21).toList: ${fibs.take(21).toList}")
+    println(s"unfold: ${unfold(1)(func)}")
+    println(s"unfold.toList: ${unfold(1)(func).take(10).toList}")
 
   }

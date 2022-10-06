@@ -124,7 +124,10 @@ object LazyList:
     lazy val num = n
     cons(num, from(num + 1))
 
-  lazy val fibs: LazyList[Int] = ???
+  lazy val fibs: LazyList[Int] =
+    def loop(current: Int, next: Int): LazyList[Int] =
+      cons(current, loop(next, current + next))
+    loop(0, 1)
 
   def unfold[A, S](state: S)(f: S => Option[(A, S)]): LazyList[A] = ???
 
@@ -137,41 +140,13 @@ object LazyList:
   lazy val onesViaUnfold: LazyList[Int] = ???
 
   @main def testLazyList(): Unit = {
-    def func[A](n: => A): A = {
-      lazy val num = n
-      println(s"Evaluating num: $num")
-      num
-    }
-    val isOdd = (_: Int) % 2 != 0
-    val isEven = (_: Int) % 2 == 0
 
     println()
-    println(s"from: ${from(func(1)).take(0)}")
-    println(s"from.toList: ${from(func(1)).take(0).toList}")
-    println(s"from: ${from(func(1)).take(-1)}")
-    println(s"from.toList: ${from(func(1)).take(-1).toList}")
-    println()
-    println(s"from: ${from(func(1)).take(3)}")
-    println(s"from.toList: ${from(func(1)).take(3).toList}")
-    println(s"from: ${from(func(1)).take(7)}")
-    println(s"from.toList: ${from(func(1)).take(7).toList}")
-    println()
-    println(s"from: ${from(func(1)).take(7).take(2)}")
-    println(s"from.toList: ${from(func(1)).take(7).take(2).toList}")
-
-    println()
-    println("##########################################################################################")
-    println(s"from2: ${from2(func(1)).take(0)}")
-    println(s"from2.toList: ${from2(func(1)).take(0).toList}")
-    println(s"from2: ${from2(func(1)).take(-1)}")
-    println(s"from2.toList: ${from2(func(1)).take(-1).toList}")
-    println()
-    println(s"from2: ${from2(func(1)).take(3)}")
-    println(s"from2.toList: ${from2(func(1)).take(3).toList}")
-    println(s"from2: ${from2(func(1)).take(7)}")
-    println(s"from2.toList: ${from2(func(1)).take(7).toList}")
-    println()
-    println(s"from2: ${from2(func(1)).take(7).take(2)}")
-    println(s"from2.toList: ${from2(func(1)).take(7).take(2).toList}")
+    println(s"fibs.take(0): ${fibs.take(0)}")
+    println(s"fibs.take(0).toList: ${fibs.take(0).toList}")
+    println(s"fibs.take(3): ${fibs.take(3)}")
+    println(s"fibs.take(3).toList: ${fibs.take(3).toList}")
+    println(s"fibs.take(21): ${fibs.take(21)}")
+    println(s"fibs.take(21).toList: ${fibs.take(21).toList}")
 
   }

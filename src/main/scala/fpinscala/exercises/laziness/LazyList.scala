@@ -117,7 +117,12 @@ enum LazyList[+A]:
     case (_, _) => None
   }
 
-  def zipAll[B](other: LazyList[B]): LazyList[(Option[A], Option[B])] = ???
+  def zipAll[B](other: LazyList[B]): LazyList[(Option[A], Option[B])] = LazyList.unfold((this, other)) {
+    case (Cons(h1, t1), Cons(h2, t2)) => Some(Some(h1()) -> Some(h2()), (t1(), t2()))
+    case (Empty, Cons(h2, t2)) => Some(None -> Some(h2()), (Empty, t2()))
+    case (Cons(h1, t1), Empty) => Some(Some(h1()) -> None, (t1(), Empty))
+    case _ => None
+  }
 
   def startsWith[B](s: LazyList[B]): Boolean = ???
 
@@ -173,9 +178,12 @@ object LazyList:
       num
     }
     val stream1: LazyList[Int] = cons(func(1), cons(func(3), cons(func(7), cons(func(4), cons(func(5), empty)))))
-    val stream2: LazyList[Int] = cons(func(1), cons(func(3), cons(func(7), cons(func(4), empty))))
+    val stream2: LazyList[Int] = cons(func(1), cons(func(3), cons(func(7), empty)))
 
-    println(s"zipWith: ${stream1.zipWith(stream2)(_ + _)}")
-    println(s"zipWith: ${stream1.zipWith(stream2)(_ + _).toList}")
+    println(s"zipAll: ${stream1.zipAll(stream2)}")
+    println(s"zipAll: ${stream1.zipAll(stream2).toList}")
+    println()
+    println(s"zipAll (rev): ${stream2.zipAll(stream1)}")
+    println(s"zipAll (rev): ${stream2.zipAll(stream1).toList}")
 
   }

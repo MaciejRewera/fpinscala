@@ -33,7 +33,8 @@ enum LazyList[+A]:
     loop(this)
 
   def take(n: Int): LazyList[A] = this match
-    case Cons(h, t) if n > 0 => cons(h(), t().take(n - 1))
+    case Cons(h, t) if n == 1 => cons(h(), empty)
+    case Cons(h, t) if n > 1  => cons(h(), t().take(n - 1))
     case _ => empty
 
   def takeWhile(p: A => Boolean): LazyList[A] = this match

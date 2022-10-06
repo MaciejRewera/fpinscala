@@ -133,7 +133,8 @@ object LazyList:
     case None => empty
     case Some((value, newState)) => cons(value, unfold(newState)(f))
 
-  lazy val fibsViaUnfold: LazyList[Int] = ???
+  lazy val fibsViaUnfold: LazyList[Int] =
+    unfold((0, 1)) { case (current, next) => Some(current, (next, current + next)) }
 
   def fromViaUnfold(n: Int): LazyList[Int] = ???
 
@@ -142,10 +143,14 @@ object LazyList:
   lazy val onesViaUnfold: LazyList[Int] = ???
 
   @main def testLazyList(): Unit = {
-    val func: Int => Option[(Int, Int)] = (n: Int) => if n > 100 then None else Some((n, n + 2))
 
     println()
-    println(s"unfold: ${unfold(1)(func)}")
-    println(s"unfold.toList: ${unfold(1)(func).take(10).toList}")
+    println(s"fibsViaUnfold.take(0): ${fibsViaUnfold.take(0)}")
+    println(s"fibsViaUnfold.take(0).toList: ${fibsViaUnfold.take(0).toList}")
+    println(s"fibsViaUnfold.take(3): ${fibsViaUnfold.take(3)}")
+    println(s"fibsViaUnfold.take(3).toList: ${fibsViaUnfold.take(3).toList}")
+    println(s"fibsViaUnfold.take(21): ${fibsViaUnfold.take(21)}")
+    println(s"fibsViaUnfold.take(21).toList: ${fibsViaUnfold.take(21).toList}")
+
 
   }

@@ -138,13 +138,12 @@ class LazyListSuite extends PropSuite:
     assert(list1.startsWith(list1))
   }
 
-/*
   test("LazyList.tails")(genLazyList) { lazyList =>
     val list = lazyList.toList
     val expected = (0 to list.length).map(i => list.drop(i)).toList
     assertEquals(lazyList.tails.toList.map(_.toList), expected)
   }
-
+/*
   test("LazyList.hasSubsequence")(genSmallInt ** genLazyList) { case n ** list =>
     assert(list.hasSubsequence(Empty))
     assert(list.hasSubsequence(list))

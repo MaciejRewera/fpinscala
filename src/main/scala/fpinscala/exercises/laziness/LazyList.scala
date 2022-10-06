@@ -129,6 +129,11 @@ enum LazyList[+A]:
   def startsWith[B](sub: LazyList[B]): Boolean =
     this.zipAll(sub).takeWhile(_._2.isDefined).forAll { case (a1, a2) => a1 == a2 }
 
+  def tails: LazyList[LazyList[A]] = LazyList.unfold(this) {
+    case Cons(h, t) => Some(Cons(h, t) -> t())
+    case Empty      => None
+  }.append(LazyList(empty))
+
 
 object LazyList:
   def cons[A](hd: => A, tl: => LazyList[A]): LazyList[A] =
@@ -181,14 +186,9 @@ object LazyList:
       num
     }
     val stream1: LazyList[Int] = cons(func(1), cons(func(2), cons(func(3), cons(func(4), cons(func(5), empty)))))
-    val stream2: LazyList[Int] = cons(func(1), cons(func(2), empty))
-    val stream3: LazyList[Int] = cons(func(1), cons(func(3), empty))
 
-    println(s"startsWith (true) : ${stream1.startsWith(stream2)}")
-    println(s"startsWith (false): ${stream2.startsWith(stream1)}")
-    println(s"startsWith (false): ${stream1.startsWith(stream3)}")
-    println(s"startsWith (true) : ${stream1.startsWith(stream1)}")
-    println(s"startsWith (true) : ${stream1.startsWith(empty)}")
-    println(s"startsWith (true) : ${empty.startsWith(empty)}")
+    println(s"tails: ${stream1.tails}")
+    println(s"tails: ${stream1.tails.toList}")
+    println(s"tails: ${stream1.tails.map(_.toList).toList}")
 
   }

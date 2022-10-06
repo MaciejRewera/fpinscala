@@ -136,7 +136,7 @@ object LazyList:
   lazy val fibsViaUnfold: LazyList[Int] =
     unfold((0, 1)) { case (current, next) => Some(current, (next, current + next)) }
 
-  def fromViaUnfold(n: Int): LazyList[Int] = ???
+  def fromViaUnfold(n: Int): LazyList[Int] = unfold(n)(num => Some((num, num + 1)))
 
   def continuallyViaUnfold[A](a: A): LazyList[A] = ???
 
@@ -145,12 +145,15 @@ object LazyList:
   @main def testLazyList(): Unit = {
 
     println()
-    println(s"fibsViaUnfold.take(0): ${fibsViaUnfold.take(0)}")
-    println(s"fibsViaUnfold.take(0).toList: ${fibsViaUnfold.take(0).toList}")
-    println(s"fibsViaUnfold.take(3): ${fibsViaUnfold.take(3)}")
-    println(s"fibsViaUnfold.take(3).toList: ${fibsViaUnfold.take(3).toList}")
-    println(s"fibsViaUnfold.take(21): ${fibsViaUnfold.take(21)}")
-    println(s"fibsViaUnfold.take(21).toList: ${fibsViaUnfold.take(21).toList}")
-
+    println(s"fromViaUnfold: ${fromViaUnfold(1).take(0)}")
+    println(s"fromViaUnfold.toList: ${fromViaUnfold(1).take(0).toList}")
+    println()
+    println(s"fromViaUnfold: ${fromViaUnfold(1).take(3)}")
+    println(s"fromViaUnfold.toList: ${fromViaUnfold(1).take(3).toList}")
+    println(s"fromViaUnfold: ${fromViaUnfold(1).take(7)}")
+    println(s"fromViaUnfold.toList: ${fromViaUnfold(1).take(7).toList}")
+    println()
+    println(s"fromViaUnfold: ${fromViaUnfold(1).take(7).take(2)}")
+    println(s"fromViaUnfold.toList: ${fromViaUnfold(1).take(7).take(2).toList}")
 
   }

@@ -126,13 +126,15 @@ enum LazyList[+A]:
     case _ => None
   }
 
-  def startsWith[B](sub: LazyList[B]): Boolean =
+  def startsWith[A](sub: LazyList[A]): Boolean =
     this.zipAll(sub).takeWhile(_._2.isDefined).forAll { case (a1, a2) => a1 == a2 }
 
   def tails: LazyList[LazyList[A]] = LazyList.unfold(this) {
     case Cons(h, t) => Some(Cons(h, t) -> t())
     case Empty      => None
   }.append(LazyList(empty))
+
+  def hasSubsequence[A](sub: LazyList[A]): Boolean = tails.exists(_.startsWith(sub))
 
 
 object LazyList:

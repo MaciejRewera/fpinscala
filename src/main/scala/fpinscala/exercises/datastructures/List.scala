@@ -109,14 +109,12 @@ object List: // `List` companion object. Contains functions for creating and wor
   def filterViaFlatMap[A](as: List[A], f: A => Boolean): List[A] = flatMap(as, x => if f(x) then List(x) else Nil)
 
   def addPairwise(a: List[Int], b: List[Int]): List[Int] = (a, b) match
-    case (Nil, _) => Nil
-    case (_, Nil) => Nil
     case (Cons(ahd, atl), Cons(bhd, btl)) => Cons(ahd + bhd, addPairwise(atl, btl))
+    case (_, _) => Nil
 
   def zipWith[A, B, C](a: List[A], b: List[B], f: (A, B) => C): List[C] = (a, b) match
-    case (Nil, _) => Nil
-    case (_, Nil) => Nil
     case (Cons(ahd, atl), Cons(bhd, btl)) => Cons(f(ahd, bhd), zipWith(atl, btl, f))
+    case (_, _) => Nil
 
   def hasSubsequence[A](l: List[A], sub: List[A]): Boolean =
     @annotation.tailrec

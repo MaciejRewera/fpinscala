@@ -100,7 +100,11 @@ enum LazyList[+A]:
     case Empty => None
   }
 
-  def takeViaUnfold(n: Int): LazyList[A] = ???
+  def takeViaUnfold(n: Int): LazyList[A] = LazyList.unfold((n, this)) {
+    case (1, Cons(h, t))              => Some(h() -> (0, empty))
+    case (num, Cons(h, t)) if num > 1 => Some(h() -> (num - 1, t()))
+    case _ => None
+  }
 
   def takeWhileViaUnfold(p: A => Boolean): LazyList[A] = ???
 
@@ -161,12 +165,16 @@ object LazyList:
       println(s"Evaluating num: $num")
       num
     }
+    val isOdd = (_: Int) % 2 != 0
+    val isEven = (_: Int) % 2 == 0
+
     val stream: LazyList[Int] = cons(func(1), cons(func(2), cons(func(3), cons(func(4), cons(func(5), empty)))))
 
-    println(s"mapViaUnfold(_ + 1): ${stream.mapViaUnfold(_ + 1)}")
-    println(s"map(_ + 1)         : ${stream.map(_ + 1)}")
-
-    println(s"mapViaUnfold(_ + 1).toList: ${stream.mapViaUnfold(_ + 1).toList}")
-    println(s"map(_ + 1).toList         : ${stream.map(_ + 1).toList}")
+    println(s"takeViaUnfold(3) : ${stream.takeViaUnfold(3)}")
+    println(s"takeViaUnfold(3) : ${stream.takeViaUnfold(3).toList}")
+    println(s"takeViaUnfold(4) : ${stream.takeViaUnfold(4).toList}")
+    println(s"takeViaUnfold(7) : ${stream.takeViaUnfold(7).toList}")
+    println(s"takeViaUnfold(0) : ${stream.takeViaUnfold(0).toList}")
+    println(s"takeViaUnfold(-1): ${stream.takeViaUnfold(-1).toList}")
 
   }

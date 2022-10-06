@@ -107,7 +107,10 @@ enum LazyList[+A]:
     case _ => None
   }
 
-  def takeWhileViaUnfold(p: A => Boolean): LazyList[A] = ???
+  def takeWhileViaUnfold(p: A => Boolean): LazyList[A] = LazyList.unfold(this) {
+    case Cons(h, t) if p(h()) => Some(h(), t())
+    case _ => None
+  }
 
   def zipWith[B, C](other: LazyList[B])(f: (A, B) => C): LazyList[C] = ???
 
@@ -169,13 +172,10 @@ object LazyList:
     val isOdd = (_: Int) % 2 != 0
     val isEven = (_: Int) % 2 == 0
 
-    val stream: LazyList[Int] = cons(func(1), cons(func(2), cons(func(3), cons(func(4), cons(func(5), empty)))))
+    val stream: LazyList[Int] = cons(func(1), cons(func(3), cons(func(7), cons(func(4), cons(func(5), empty)))))
 
-    println(s"takeViaUnfold(3) : ${stream.takeViaUnfold(3)}")
-    println(s"takeViaUnfold(3) : ${stream.takeViaUnfold(3).toList}")
-    println(s"takeViaUnfold(4) : ${stream.takeViaUnfold(4).toList}")
-    println(s"takeViaUnfold(7) : ${stream.takeViaUnfold(7).toList}")
-    println(s"takeViaUnfold(0) : ${stream.takeViaUnfold(0).toList}")
-    println(s"takeViaUnfold(-1): ${stream.takeViaUnfold(-1).toList}")
+    println(s"takeWhileViaUnfold : ${stream.takeWhileViaUnfold(isOdd)}")
+    println(s"takeWhileViaUnfold : ${stream.takeWhileViaUnfold(isOdd).toList}")
+    println(s"takeWhileViaUnfold : ${stream.takeWhileViaUnfold(isEven).toList}")
 
   }

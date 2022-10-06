@@ -138,22 +138,16 @@ object LazyList:
 
   def fromViaUnfold(n: Int): LazyList[Int] = unfold(n)(num => Some((num, num + 1)))
 
-  def continuallyViaUnfold[A](a: A): LazyList[A] = ???
+  def continuallyViaUnfold[A](a: A): LazyList[A] = unfold(())(_ => Some((a, ())))
 
   lazy val onesViaUnfold: LazyList[Int] = ???
 
   @main def testLazyList(): Unit = {
 
     println()
-    println(s"fromViaUnfold: ${fromViaUnfold(1).take(0)}")
-    println(s"fromViaUnfold.toList: ${fromViaUnfold(1).take(0).toList}")
-    println()
-    println(s"fromViaUnfold: ${fromViaUnfold(1).take(3)}")
-    println(s"fromViaUnfold.toList: ${fromViaUnfold(1).take(3).toList}")
-    println(s"fromViaUnfold: ${fromViaUnfold(1).take(7)}")
-    println(s"fromViaUnfold.toList: ${fromViaUnfold(1).take(7).toList}")
-    println()
-    println(s"fromViaUnfold: ${fromViaUnfold(1).take(7).take(2)}")
-    println(s"fromViaUnfold.toList: ${fromViaUnfold(1).take(7).take(2).toList}")
+    println(s"continuallyViaUnfold: ${continuallyViaUnfold('a').take(7)}")
+    println(s"continuallyViaUnfold: ${continuallyViaUnfold('a').take(7)}")
+    println(s"continuallyViaUnfold: ${continuallyViaUnfold('a').take(7)}")
+    println(s"continuallyViaUnfold.toList: ${continuallyViaUnfold('a').take(7).toList}")
 
   }

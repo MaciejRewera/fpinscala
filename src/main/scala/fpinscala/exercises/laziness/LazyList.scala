@@ -118,7 +118,11 @@ object LazyList:
     lazy val single : LazyList[A] = cons(a, single)
     single
 
-  def from(n: Int): LazyList[Int] = ???
+  def from(n: Int): LazyList[Int] = cons(n, from(n + 1))
+  
+  def from2(n: => Int): LazyList[Int] =
+    lazy val num = n
+    cons(num, from(num + 1))
 
   lazy val fibs: LazyList[Int] = ???
 
@@ -142,15 +146,32 @@ object LazyList:
     val isEven = (_: Int) % 2 == 0
 
     println()
-    println(s"continually2: ${continually2(func('a')).take(7)}")
-    println(s"continually2: ${continually2(func('a')).take(7)}")
-    println(s"continually2: ${continually2(func('a')).take(7)}")
-    println(s"continually2.toList: ${continually2(func('a')).take(7).toList}")
+    println(s"from: ${from(func(1)).take(0)}")
+    println(s"from.toList: ${from(func(1)).take(0).toList}")
+    println(s"from: ${from(func(1)).take(-1)}")
+    println(s"from.toList: ${from(func(1)).take(-1).toList}")
+    println()
+    println(s"from: ${from(func(1)).take(3)}")
+    println(s"from.toList: ${from(func(1)).take(3).toList}")
+    println(s"from: ${from(func(1)).take(7)}")
+    println(s"from.toList: ${from(func(1)).take(7).toList}")
+    println()
+    println(s"from: ${from(func(1)).take(7).take(2)}")
+    println(s"from.toList: ${from(func(1)).take(7).take(2).toList}")
 
     println()
-    println(s"continually: ${continually(func('a')).take(7)}")
-    println(s"continually: ${continually(func('a')).take(7)}")
-    println(s"continually: ${continually(func('a')).take(7)}")
-    println(s"continually.toList: ${continually(func('a')).take(7).toList}")
+    println("##########################################################################################")
+    println(s"from2: ${from2(func(1)).take(0)}")
+    println(s"from2.toList: ${from2(func(1)).take(0).toList}")
+    println(s"from2: ${from2(func(1)).take(-1)}")
+    println(s"from2.toList: ${from2(func(1)).take(-1).toList}")
+    println()
+    println(s"from2: ${from2(func(1)).take(3)}")
+    println(s"from2.toList: ${from2(func(1)).take(3).toList}")
+    println(s"from2: ${from2(func(1)).take(7)}")
+    println(s"from2.toList: ${from2(func(1)).take(7).toList}")
+    println()
+    println(s"from2: ${from2(func(1)).take(7).take(2)}")
+    println(s"from2.toList: ${from2(func(1)).take(7).take(2).toList}")
 
   }

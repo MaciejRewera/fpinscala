@@ -95,6 +95,19 @@ enum LazyList[+A]:
 
   def append[A2 >: A](other: => LazyList[A2]): LazyList[A2] = foldRight(other)(cons)
 
+  def mapViaUnfold[B](f: A => B): LazyList[B] = LazyList.unfold(this) {
+    case Cons(h, t) => Some((f(h()), t()))
+    case Empty => None
+  }
+
+  def takeViaUnfold(n: Int): LazyList[A] = ???
+
+  def takeWhileViaUnfold(p: A => Boolean): LazyList[A] = ???
+
+  def zipWith[B, C](other: LazyList[B])(f: (A, B) => C): LazyList[C] = ???
+
+  def zipAll[B](other: LazyList[B]): LazyList[(Option[A], Option[B])] = ???
+
   def startsWith[B](s: LazyList[B]): Boolean = ???
 
 
@@ -143,11 +156,17 @@ object LazyList:
   lazy val onesViaUnfold: LazyList[Int] = unfold(())(_ => Some((1, ())))
 
   @main def testLazyList(): Unit = {
+    def func(n: => Int): Int = {
+      lazy val num = n
+      println(s"Evaluating num: $num")
+      num
+    }
+    val stream: LazyList[Int] = cons(func(1), cons(func(2), cons(func(3), cons(func(4), cons(func(5), empty)))))
 
-    println()
-    println(s"onesViaUnfold: ${onesViaUnfold.take(7)}")
-    println(s"onesViaUnfold: ${onesViaUnfold.take(7)}")
-    println(s"onesViaUnfold: ${onesViaUnfold.take(7)}")
-    println(s"onesViaUnfold.toList: ${onesViaUnfold.take(7).toList}")
+    println(s"mapViaUnfold(_ + 1): ${stream.mapViaUnfold(_ + 1)}")
+    println(s"map(_ + 1)         : ${stream.map(_ + 1)}")
+
+    println(s"mapViaUnfold(_ + 1).toList: ${stream.mapViaUnfold(_ + 1).toList}")
+    println(s"map(_ + 1).toList         : ${stream.map(_ + 1).toList}")
 
   }

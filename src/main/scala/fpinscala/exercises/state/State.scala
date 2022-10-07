@@ -90,7 +90,12 @@ object RNG:
 
   val doubleIntViaMap2: Rand[(Double, Int)] = map2(_double, int)((_, _))
 
-  def sequence[A](rs: List[Rand[A]]): Rand[List[A]] = ???
+  def sequence[A](rs: List[Rand[A]]): Rand[List[A]] =
+    rng =>
+      rs.foldRight((List.empty[A]), rng) { case (a, (acc, r)) =>
+        val (i, r2) = a(r)
+        (i :: acc, r2)
+      }
 
   def flatMap[A, B](r: Rand[A])(f: A => Rand[B]): Rand[B] = ???
 
@@ -102,11 +107,7 @@ object RNG:
     val seed = 123456789L
     val rng = Simple(seed)
 
-    println(s"intDouble       : ${intDouble(rng)}")
-    println(s"intDoubleViaMap2: ${intDoubleViaMap2(rng)}")
-    println()
-    println(s"doubleInt       : ${doubleInt(rng)}")
-    println(s"doubleIntViaMap2: ${doubleIntViaMap2(rng)}")
+    println(s"sequence: ${sequence(List(int, nonNegativeInt, double, _double, intDoubleViaMap2))(rng)}")
 
   }
 

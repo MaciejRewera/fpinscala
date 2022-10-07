@@ -42,7 +42,6 @@ object RNG:
   val _double: Rand[Double] =
     map(nonNegativeInt)(_ / (Int.MaxValue.toDouble + 1))
 
-
   def intDouble(rng: RNG): ((Int,Double), RNG) =
     val (i, rng1) = rng.nextInt
     val (d, rng2) = double(rng1)
@@ -81,7 +80,15 @@ object RNG:
       (i :: acc, r2)
     }
 
-  def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = ???
+  def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
+    rng =>
+      val (r1, rng1) = ra(rng)
+      val (r2, rng2) = rb(rng1)
+      (f(r1, r2), rng2)
+
+  val intDoubleViaMap2: Rand[(Int, Double)] = map2(int, _double)((_, _))
+
+  val doubleIntViaMap2: Rand[(Double, Int)] = map2(_double, int)((_, _))
 
   def sequence[A](rs: List[Rand[A]]): Rand[List[A]] = ???
 
@@ -95,8 +102,11 @@ object RNG:
     val seed = 123456789L
     val rng = Simple(seed)
 
-    println(s"double : ${double(rng)}")
-    println(s"double2: ${_double(rng)}")
+    println(s"intDouble       : ${intDouble(rng)}")
+    println(s"intDoubleViaMap2: ${intDoubleViaMap2(rng)}")
+    println()
+    println(s"doubleInt       : ${doubleInt(rng)}")
+    println(s"doubleIntViaMap2: ${doubleIntViaMap2(rng)}")
 
   }
 

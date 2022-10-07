@@ -1,5 +1,7 @@
 package fpinscala.exercises.state
 
+import scala.annotation.tailrec
+
 
 trait RNG:
   def nextInt: (Int, RNG) // Should generate a random `Int`. We'll later define other functions in terms of `nextInt`.
@@ -52,7 +54,28 @@ object RNG:
     val (d3, rng3) = double(rng2)
     ((d1, d2, d3), rng3)
 
-  def ints(count: Int)(rng: RNG): (List[Int], RNG) = ???
+  def ints(count: Int)(rng: RNG): (List[Int], RNG) =
+    if count <= 0 then (List.empty, rng)
+    else
+      val (i, newRng) = rng.nextInt
+      val (is, newRng2) = ints(count - 1)(newRng)
+      (i :: is, newRng2)
+
+  def ints2(count: Int)(rng: RNG): (List[Int], RNG) =
+    @tailrec
+    def loop(counter: Int, r: RNG, acc: List[Int]): (List[Int], RNG) =
+      if counter <= 0 then (acc, r)
+      else
+        val (i, r2) = r.nextInt
+        loop(counter - 1, r2, i :: acc)
+
+    loop(count, rng, List.empty)
+
+  def ints3(count: Int)(rng: RNG): (List[Int], RNG) =
+    (1 to count).foldRight((List.empty[Int], rng)) { case (a, (acc, r)) =>
+      val (i, r2) = r.nextInt
+      (i :: acc, r2)
+    }
 
   def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = ???
 
@@ -63,6 +86,19 @@ object RNG:
   def mapViaFlatMap[A, B](r: Rand[A])(f: A => B): Rand[B] = ???
 
   def map2ViaFlatMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = ???
+
+  @main def testRng() = {
+    val seed = 123456789L
+    val rng = Simple(seed)
+
+    val ints = RNG.ints(10)(rng)
+    println(s"single int  : ${rng.nextInt}")
+    println(s"ints        : ${ints}")
+    println(s"ints.reverse: ${(ints._1.reverse, ints._2)}")
+    println(s"ints2       : ${RNG.ints2(10)(rng)}")
+    println(s"ints3       : ${RNG.ints3(10)(rng)}")
+
+  }
 
 opaque type State[S, +A] = S => (A, S)
 

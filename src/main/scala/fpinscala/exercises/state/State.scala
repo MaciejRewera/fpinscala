@@ -39,6 +39,10 @@ object RNG:
     val double = i / (Int.MaxValue.toDouble + 1)
     (double, newRng)
 
+  val _double: Rand[Double] =
+    map(nonNegativeInt)(_ / (Int.MaxValue.toDouble + 1))
+
+
   def intDouble(rng: RNG): ((Int,Double), RNG) =
     val (i, rng1) = rng.nextInt
     val (d, rng2) = double(rng1)
@@ -91,12 +95,8 @@ object RNG:
     val seed = 123456789L
     val rng = Simple(seed)
 
-    val ints = RNG.ints(10)(rng)
-    println(s"single int  : ${rng.nextInt}")
-    println(s"ints        : ${ints}")
-    println(s"ints.reverse: ${(ints._1.reverse, ints._2)}")
-    println(s"ints2       : ${RNG.ints2(10)(rng)}")
-    println(s"ints3       : ${RNG.ints3(10)(rng)}")
+    println(s"double : ${double(rng)}")
+    println(s"double2: ${_double(rng)}")
 
   }
 

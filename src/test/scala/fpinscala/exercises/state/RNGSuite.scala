@@ -71,12 +71,10 @@ class RNGSuite extends PropSuite:
   test("RNG.map")(genRNG ** genCounter) { case rng ** counter =>
     assert(checkRND(rng, counter, map(int)(_.toString), _.toIntOption.isDefined))
   }
-
-  /*
+  
   test("RNG._double")(genRNG ** genCounter) { case rng ** counter =>
     assert(checkRND(rng, counter, _double, isInInterval))
   }
-   */
 
   test("RNG.map2")(genRNG ** genCounter) { case rng ** counter =>
     val randC = map2(double, double)((d1, d2) => (d1, d2))

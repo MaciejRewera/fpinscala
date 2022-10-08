@@ -114,16 +114,19 @@ object RNG:
   def map2ViaFlatMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
     flatMap(ra)(a => flatMap(rb)(b => unit(f(a, b))))
 
+  def createDie(k: Int): Rand[Int] = map(nonNegativeLessThan(k))(_ + 1)
+
   @main def testRng() = {
     val seed = 123456789L
     val rng = Simple(seed)
 
-    val numbersAmount = 1000
-    val upperLimit = 10
+    val rollsAmount = 100
+    val k6 = createDie(6)
+    val k10 = createDie(10)
 
-    val randomValues = sequence(List.fill(numbersAmount)(nonNegativeLessThan(upperLimit)))(rng)
-    println(s"random values: ${randomValues._1}")
-    println(s"grouped: ${randomValues._1.groupBy(identity).view.mapValues(_.length).toList}")
+    val dieRolls = sequence(List.fill(rollsAmount)(k10))(rng)
+    println(s"random values: ${dieRolls._1}")
+    println(s"grouped: ${dieRolls._1.groupBy(identity).view.mapValues(_.length).toList.sortBy(_._1)}")
 
   }
 

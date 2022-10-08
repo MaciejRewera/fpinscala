@@ -108,7 +108,7 @@ class EitherSuite extends PropSuite:
       case (_, n) if n < 0  => Left(List("Age is out of range."))
       case _                => Right(Person(Name(name), Age(age)))
 
-    assertEquals(map2All(Name.make2(name), Age.make2(age), Person(_, _)), expected)
+    assertEquals(map2All(Name.make2(name), Age.make2(age))(Person(_, _)), expected)
   }
 
   test("Either.traverseAll")(genAgesList) { ageList =>
@@ -117,7 +117,7 @@ class EitherSuite extends PropSuite:
       if negCount > 0 then Left(List.fill(negCount)("Age is out of range."))
       else Right(ageList.map(Age(_)))
 
-    assertEquals(Either.traverseAll(ageList, Age.make2), expected)
+    assertEquals(Either.traverseAll(ageList)(Age.make2), expected)
   }
 
   test("Either.sequenceAll")(genAgesList) { ageList =>

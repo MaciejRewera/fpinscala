@@ -23,12 +23,6 @@ object RNG:
   def unit[A](a: A): Rand[A] =
     rng => (a, rng)
 
-  def map[A, B](s: Rand[A])(f: A => B): Rand[B] =
-    rng => {
-      val (a, rng2) = s(rng)
-      (f(a), rng2)
-    }
-
   def nonNegativeInt(rng: RNG): (Int, RNG) =
     val (i, newRng) = rng.nextInt
     val positiveInt = if i < 0 then -(i + 1) else i
@@ -83,6 +77,12 @@ object RNG:
   def intsViaSequence(count: Int): Rand[List[Int]] =
     sequence(List.fill(count)(int))
 
+  def map[A, B](s: Rand[A])(f: A => B): Rand[B] =
+    rng => {
+      val (a, rng2) = s(rng)
+      (f(a), rng2)
+    }
+
   def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
     rng =>
       val (r1, rng1) = ra(rng)
@@ -96,7 +96,18 @@ object RNG:
   def sequence[A](rs: List[Rand[A]]): Rand[List[A]] =
     rs.foldRight(unit(List.empty[A]))((a, acc) => map2(a, acc)(_ :: _))
 
-  def flatMap[A, B](r: Rand[A])(f: A => Rand[B]): Rand[B] = ???
+  private def tryAgainCondition(n: Int): Int => Boolean = i => (i >= Int.MaxValue - (Int.MaxValue % n))
+
+  def nonNegativeLessThan(n: Int): Rand[Int] =
+    flatMap(nonNegativeInt) { i =>
+      val mod = i % n
+      if (tryAgainCondition(n)(i)) nonNegativeLessThan(n)
+      else unit(mod)
+    }
+
+  def flatMap[A, B](r: Rand[A])(f: A => Rand[B]): Rand[B] = rng =>
+    val (a, rng2) = r(rng)
+    f(a)(rng2)
 
   def mapViaFlatMap[A, B](r: Rand[A])(f: A => B): Rand[B] = ???
 
@@ -106,12 +117,12 @@ object RNG:
     val seed = 123456789L
     val rng = Simple(seed)
 
-    println(s"sequence: ${sequence(List(int, nonNegativeInt, double, _double, intDoubleViaMap2))(rng)}")
-    println()
-    println(s"ints           : ${ints(7)(rng)}")
-    println(s"ints2          : ${ints2(7)(rng)}")
-    println(s"ints3          : ${ints3(7)(rng)}")
-    println(s"intsViaSequence: ${intsViaSequence(7)(rng)}")
+    val numbersAmount = 1000
+    val upperLimit = 10
+
+    val randomValues = sequence(List.fill(numbersAmount)(nonNegativeLessThan(upperLimit)))(rng)
+    println(s"random values: ${randomValues._1}")
+    println(s"grouped: ${randomValues._1.groupBy(identity).view.mapValues(_.length).toList}")
 
   }
 

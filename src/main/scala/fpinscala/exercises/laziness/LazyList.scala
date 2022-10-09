@@ -193,26 +193,27 @@ object LazyList:
 
   lazy val onesViaUnfold: LazyList[Int] = unfold(())(_ => Some((1, ())))
 
+  def repeatedly[A](elems: A*): LazyList[A] =
+    def loop(rest: A*): LazyList[A] =
+      if rest.isEmpty then empty
+      else if rest.tail.isEmpty then cons(rest.head, loop(elems*))
+      else cons(rest.head, loop(rest.tail*))
+
+    loop(elems*)
+
   @main def testLazyList(): Unit = {
     def gen(n: => Int): Int = {
       lazy val num = n
       println(s"Evaluating num: $num")
       num
     }
-    def func(n1: Int, n2: => Int): Int = {
-      lazy val res = n1 + n2
-      println(s"Executing func. res = $res")
-      res
-    }
 
-    val stream1: LazyList[Int] = cons(gen(1), cons(gen(2), cons(gen(3), cons(gen(4), cons(gen(5), empty)))))
+    val elements = Seq(gen(1), gen(2), gen(3), gen(4))
+    val repeated = LazyList.repeatedly(elements*)
 
-    println(s"scanRight: ${stream1.scanRight(0)(func)}")
-    println(s"scanRight: ${stream1.scanRight(0)(func).toList}")
-    println()
-    println(s"scanRightRecomputing: ${stream1.scanRightRecomputing(0)(func)}")
-    println(s"scanRightRecomputing: ${stream1.scanRightRecomputing(0)(func).toList}")
-    println()
-    println(s"tails: ${stream1.tails.toList.map(_.toList)}")
-
+    println(s"repeatedly (empty): ${LazyList.repeatedly().take(10).toList}")
+    println(s"repeatedly ('a'): ${LazyList.repeatedly('a').take(10).toList}")
+    println(s"repeatedly (1,2,3): ${LazyList.repeatedly(1, 2, 3).take(10).toList}")
+    println(s"repeatedly (123)  : ${repeated.take(123).toList}")
+    repeated.take(101).toList.grouped(elements.length).foreach(println)
   }

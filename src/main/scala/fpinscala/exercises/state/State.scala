@@ -116,36 +116,30 @@ object RNG:
 
   def createDie(k: Int): Rand[Int] = map(nonNegativeLessThan(k))(_ + 1)
 
-  @main def testRng() = {
-    val seed = 123456789L
-    val rng = Simple(seed)
-
-    val rollsAmount = 100
-    val k6 = createDie(6)
-    val k10 = createDie(10)
-
-    val dieRolls = sequence(List.fill(rollsAmount)(k10))(rng)
-    println(s"random values: ${dieRolls._1}")
-    println(s"grouped: ${dieRolls._1.groupBy(identity).view.mapValues(_.length).toList.sortBy(_._1)}")
-
-  }
-
 opaque type State[S, +A] = S => (A, S)
 
 object State:
   extension [S, A](underlying: State[S, A])
     def run(s: S): (A, S) = underlying(s)
 
-    def map[B](f: A => B): State[S, B] =
-      ???
+    def map[B](f: A => B): State[S, B] = flatMap(a => unit(f(a)))
 
     def map2[B, C](sb: State[S, B])(f: (A, B) => C): State[S, C] =
-      ???
+      for {
+        a <- run
+        b <- sb.run
+      } yield f(a, b)
 
-    def flatMap[B](f: A => State[S, B]): State[S, B] =
-      ???
+    def flatMap[B](f: A => State[S, B]): State[S, B] = state =>
+      val (value, newState) = run(state)
+      f(value)(newState)
 
   def apply[S, A](f: S => (A, S)): State[S, A] = f
+
+  def unit[S, A](a: A): State[S, A] = state => (a, state)
+
+  def sequence[S, A](rs: List[State[S, A]]): State[S, List[A]] =
+    rs.foldRight[State[S, List[A]]](State.unit(List.empty)) { (state, acc) => state.map2(acc)(_ :: _) }
 
 enum Input:
   case Coin, Turn

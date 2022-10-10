@@ -141,10 +141,86 @@ object State:
   def sequence[S, A](rs: List[State[S, A]]): State[S, List[A]] =
     rs.foldRight[State[S, List[A]]](State.unit(List.empty)) { (state, acc) => state.map2(acc)(_ :: _) }
 
+  def traverse[S, A, B](as: List[A])(f: A => State[S, B]): State[S, List[B]] =
+    as.foldRight[State[S, List[B]]](State.unit(List.empty)) { (a, acc) => f(a).map2(acc)(_ :: _) }
+
+  def get[S]: State[S, S] = s => (s, s)
+
+  def set[S](s: S): State[S, Unit] = _ => ((), s)
+
+  def modify[S](f: S => S): State[S, Unit] =
+    get[S].flatMap(s => set[S](f(s)))
+
 enum Input:
   case Coin, Turn
 
 case class Machine(locked: Boolean, candies: Int, coins: Int)
 
 object Candy:
-  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = ???
+  def simulateMachine1(inputs: List[Input]): State[Machine, (Int, Int)] =
+    State.apply { machine =>
+      val resultMachine = inputs.foldLeft(machine) { (machineState, input) =>
+        modifyMachine(input)(machineState)
+      }
+
+      ((resultMachine.coins, resultMachine.candies), resultMachine)
+    }
+
+  def simulateMachine2(inputs: List[Input]): State[Machine, (Int, Int)] =
+      State.traverse(inputs)(i => State.modify(modifyMachine(i))).flatMap(_ => State.get).map(s => (s.coins, s.candies))
+
+  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] =
+    for {
+      _ <- State.traverse(inputs)(i => State.modify(modifyMachine(i)))
+      s <- State.get
+    } yield (s.coins, s.candies)
+
+  private def modifyMachine(input: Input) = (machine: Machine) =>
+    (input, machine) match
+      case (_, Machine(_, 0, _))                    => machine
+      case (Input.Coin, Machine(false, _, _))       => machine
+      case (Input.Turn, Machine(true, _, _))        => machine
+      case (Input.Coin, Machine(true, _, coins))    => machine.copy(locked = false, coins = coins + 1)
+      case (Input.Turn, Machine(false, candies, _)) => machine.copy(locked = true, candies = candies - 1)
+
+  def simulateMachine4(inputs: List[Input]): State[Machine, (Int, Int)] =
+    for {
+      list <- State.traverse(inputs)(i => State.apply(update(i)))
+      s <- State.get
+    } yield list.lastOption.getOrElse((s.coins, s.candies))
+
+  def simulateMachineAccumulate(inputs: List[Input]): State[Machine, List[(Int, Int)]] =
+    for {
+      list <- State.traverse(inputs)(i => State.apply(update(i)))
+    } yield list
+
+  private def update(input: Input) = (machine: Machine) =>
+    (input, machine) match
+      case (_, Machine(_, 0, _))                    => ((machine.coins, machine.candies), machine)
+      case (Input.Coin, Machine(false, _, _))       => ((machine.coins, machine.candies), machine)
+      case (Input.Turn, Machine(true, _, _))        => ((machine.coins, machine.candies), machine)
+      case (Input.Coin, Machine(true, _, coins))    => {
+        val newMachine = machine.copy(locked = false, coins = coins + 1)
+        ((newMachine.coins, newMachine.candies), newMachine)
+      }
+      case (Input.Turn, Machine(false, candies, _)) => {
+        val newMachine = machine.copy(locked = true, candies = candies - 1)
+        ((newMachine.coins, newMachine.candies), newMachine)
+      }
+
+  @main def runCandyMachine = {
+    val machine = Machine(true, 10, 1)
+    val inputs: List[Input] = List(Input.Coin, Input.Turn, Input.Coin, Input.Turn, Input.Coin, Input.Turn, Input.Coin, Input.Coin)
+
+    val (steps, newMachine) = simulateMachineAccumulate(inputs).run(machine)
+
+    println(s"candies : ${steps.last._2}")
+    println(s"coins   : ${steps.last._1}")
+    println(s"newMachine.locked : ${newMachine.locked}")
+    println(s"newMachine.candies: ${newMachine.candies}")
+    println(s"newMachine.coins  : ${newMachine.coins}")
+    println()
+    println("steps (coins, candies):")
+    println(s"${(machine.coins, machine.candies)}")
+    println(s"${steps.mkString("\n")}")
+  }

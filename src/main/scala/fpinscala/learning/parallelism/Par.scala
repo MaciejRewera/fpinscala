@@ -58,7 +58,7 @@ object Par:
 
   def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
 
-  def run[A](es: ExecutorService)(par: Par[A]): Future[A] = ???
+  def run[A](es: ExecutorService)(par: Par[A]): Future[A] = par(es)
 
   def asyncF[A, B](f: A => B): A => Par[B] = a => lazyUnit(f(a))
 
@@ -77,15 +77,26 @@ object Par:
 
   extension [A](list: IndexedSeq[Par[A]]) def sequenceBalanced: Par[IndexedSeq[A]] =
     if (list.isEmpty) unit(IndexedSeq.empty)
-    else if (list.length == 1) map(list.head)(a => IndexedSeq(a))
+    else if (list.length == 1) list.head.map(a => IndexedSeq(a))
     else
       val (l, r) = list.splitAt(list.length / 2)
       map2(l.sequenceBalanced, r.sequenceBalanced)(_ ++ _)
 
+  def parFilter[A](list: Seq[A])(f: A => Boolean): Par[Seq[A]] = fork {
+    list.traverse(a => if f(a) then Seq(a) else Seq.empty).map(_.flatten)
+  }
 
+  extension [A](list: Seq[A]) def traverse[B](f: A => B): Par[Seq[B]] = fork {
+    list.toIndexedSeq.traverse(f).map(_.toSeq)
+  }
 
-
-
+  extension [A](list: IndexedSeq[A]) def traverse[B](f: A => B): Par[IndexedSeq[B]] =
+    if (list.isEmpty) unit(IndexedSeq.empty)
+    else if (list.length == 1)
+      unit(IndexedSeq(f(list.head)))
+    else
+      val (l, r) = list.splitAt(list.length / 2)
+      map2(l.traverse(f), r.traverse(f))(_ ++ _)
 
 
 

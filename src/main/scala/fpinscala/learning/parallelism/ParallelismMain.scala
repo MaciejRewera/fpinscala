@@ -1,24 +1,32 @@
 package fpinscala.learning.parallelism
 
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.{ExecutorService, Executors, TimeUnit}
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
+import scala.util.Random
 
 object ParallelismMain:
 
+  private val executorService = Executors.newFixedThreadPool(10)
+
   @main def parallelismTest = {
-    val ints = IndexedSeq(1, 2, 3, 4, 5, 6)
+    val filterFunc = (_: Int) % 2 == 0
 
-    println(sum(ints))
+    val (hugeList, hugeListCreationTime) = measureExecutionTime { List.fill(1000000)(Random.nextInt(1000)) }
+    println(s"hugeListCreationTime: ${hugeListCreationTime.toMillis} ms")
 
-    val (hugeList, hugeListCreationTime) = measureExecutionTime { List.fill(1000000)(7) }
-    val (hugeListMapped, hugeListMappedCreationTime) = measureExecutionTime { Par.parMap(hugeList)(_ + 1) }
-    val (hugeListMappedSlow, hugeListMappedSlowCreationTime) = measureExecutionTime { Par.parMapSlow(hugeList)(_ + 1) }
+    val (hugeListFilteredPar, hugeListFilteredParTime) = measureExecutionTime { Par.parFilter(hugeList)(filterFunc) }
+    println(s"hugeListFilteredParTime: ${hugeListFilteredParTime.toMicros} micros")
 
-    println(s"hugeListMapped: ${hugeListMapped}")
-    println(s"hugeListCreationTime          : ${hugeListCreationTime.toMillis} ms")
-    println(s"hugeListMappedCreationTime    : ${hugeListMappedCreationTime.toMicros} micros")
-    println(s"hugeListMappedSlowCreationTime: ${hugeListMappedSlowCreationTime.toMillis} ms")
+    val (hugeListFilteredRunned, hugeListFilteredRunnedTime) = measureExecutionTime { Par.run(executorService)(hugeListFilteredPar).get() }
+    println(s"Actual filtered list: ${hugeListFilteredRunned.take(100)}")
+    println(s"Actual filtered list exec. time: ${hugeListFilteredRunnedTime.toMillis} ms")
 
+    val (hugeListFiltered, hugeListFilteredTime) = measureExecutionTime { hugeList.filter(filterFunc) }
+    println(s"Actual sequentially-filtered list: ${hugeListFiltered.take(100)}")
+    println(s"Actual sequentially-filtered list exec. time: ${hugeListFilteredTime.toMillis} ms")
+
+    executorService.shutdown()
   }
 
   private def sum(ints: IndexedSeq[Int]): Par[Int] =

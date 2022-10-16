@@ -29,7 +29,9 @@ object Par:
 
       def isDone(): Boolean = result.isDefined
 
-      def get(timeout: Long, units: TimeUnit): A =
+      def get(): C = get(Long.MaxValue, TimeUnit.NANOSECONDS)
+
+      def get(timeout: Long, units: TimeUnit): C =
         val timeoutInNanos = TimeUnit.NANOSECONDS.convert(timeout, units)
         val startTime = System.nanoTime()
         val resA = futureA.get(timeoutInNanos, TimeUnit.NANOSECONDS)

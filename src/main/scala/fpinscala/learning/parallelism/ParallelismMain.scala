@@ -15,25 +15,31 @@ object ParallelismMain:
     val (hugeList, hugeListCreationTime) = measureExecutionTime { List.fill(1000000)(Random.nextInt(1000)) }
     println(s"hugeListCreationTime: ${hugeListCreationTime.toMillis} ms")
 
-    val (hugeListFilteredPar, hugeListFilteredParTime) = measureExecutionTime { Par.parFilter(hugeList)(filterFunc) }
-    println(s"hugeListFilteredParTime: ${hugeListFilteredParTime.toMicros} micros")
+    val (maxResult, maxTime) = measureExecutionTime { hugeList.max }
+    println(s"maxResult: ${maxResult}")
+    println(s"maxTime  : ${maxTime.toMillis} ms")
 
-    val (hugeListFilteredRunned, hugeListFilteredRunnedTime) = measureExecutionTime { Par.run(executorService)(hugeListFilteredPar).get() }
-    println(s"Actual filtered list: ${hugeListFilteredRunned.take(100)}")
-    println(s"Actual filtered list exec. time: ${hugeListFilteredRunnedTime.toMillis} ms")
+    val (maxParResult, maxParTime) = measureExecutionTime { Par.max(hugeList.toIndexedSeq) }
+    println(s"maxParResult: ${maxParResult}")
+    println(s"maxParTime: ${maxParTime.toMillis} ms")
 
-    val (hugeListFiltered, hugeListFilteredTime) = measureExecutionTime { hugeList.filter(filterFunc) }
-    println(s"Actual sequentially-filtered list: ${hugeListFiltered.take(100)}")
-    println(s"Actual sequentially-filtered list exec. time: ${hugeListFilteredTime.toMillis} ms")
+    val (maxParRunnedResult, maxParRunnedTime) = measureExecutionTime { Par.run(executorService)(maxParResult).get() }
+    println(s"maxParRunnedResult: ${maxParRunnedResult}")
+    println(s"maxParRunnedTime  : ${maxParRunnedTime.toMillis} ms")
+
+
+    val shortList = List(1, 2, 3, 4, 5, 6)
+
+    val (sumParResult, sumParTime) = measureExecutionTime { Par.sum(shortList.toIndexedSeq) }
+    println(s"sumParResult: ${sumParResult}")
+    println(s"sumParTime  : ${sumParTime.toMillis} ms")
+
+    val (sumParRunnedResult, sumParRunnedTime) = measureExecutionTime { Par.run(executorService)(sumParResult).get() }
+    println(s"sumParRunnedResult: ${sumParRunnedResult}")
+    println(s"sumParRunnedTime  : ${sumParRunnedTime.toMillis} ms")
 
     executorService.shutdown()
   }
-
-  private def sum(ints: IndexedSeq[Int]): Par[Int] =
-    if ints.size <= 1 then Par.unit(ints.headOption.getOrElse(0))
-    else
-      val (l, r) = ints.splitAt(ints.length / 2)
-      Par.map2(sum(l), sum(r))(_ + _)
 
   private def measureExecutionTime[A](f: => A): (A, Duration) =
     val startTime = System.nanoTime()

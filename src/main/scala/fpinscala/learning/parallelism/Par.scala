@@ -29,3 +29,5 @@ object Par:
   def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
 
   def run[A](es: ExecutorService)(par: Par[A]): Future[A] = ???
+
+  def asyncF[A, B](f: A => B): A => Par[B] = a => lazyUnit(f(a))

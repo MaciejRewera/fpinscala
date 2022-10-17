@@ -15,11 +15,43 @@ object Par:
 
   def unit[A](a: A): Par[A] = (_: ExecutorService) => UnitFuture(a)
 
-  def map2[A, B, C](parA: => Par[A], parB: => Par[B])(f: (A, B) => C): Par[C] =
+  def map2[A, B, R](parA: => Par[A], parB: => Par[B])(f: (A, B) => R): Par[R] =
     (es: ExecutorService) =>
       val a = parA(es)
       val b = parB(es)
       UnitFuture(f(a.get, b.get))
+
+  def flatMap2[A, B, R](parA: => Par[A], parB: => Par[B])(f: (A, B) => Par[R]): Par[R] =
+    (es: ExecutorService) =>
+      val a = parA(es)
+      val b = parB(es)
+      f(a.get, b.get)(es)
+
+  def map3[A, B, C, R](parA: => Par[A], parB: => Par[B], parC: => Par[C])(f: (A, B, C) => R): Par[R] =
+    for {
+      a <- parA
+      b <- parB
+      c <- parC
+    } yield f(a, b, c)
+
+  def map4[A, B, C, D, R](parA: => Par[A], parB: => Par[B], parC: => Par[C], parD: => Par[D])(
+    f: (A, B, C, D) => R
+  ): Par[R] = for {
+    a <- parA
+    b <- parB
+    c <- parC
+    d <- parD
+  } yield f(a, b, c, d)
+
+  def map5[A, B, C, D, E, R](parA: => Par[A], parB: => Par[B], parC: => Par[C], parD: => Par[D], parE: => Par[E])(
+    f: (A, B, C, D, E) => R
+  ): Par[R] = for {
+    a <- parA
+    b <- parB
+    c <- parC
+    d <- parD
+    e <- parE
+  } yield f(a, b, c, d, e)
 
   def map2Timeouts[A, B, C](parA: => Par[A], parB: => Par[B])(f: (A, B) => C): Par[C] =
     (es: ExecutorService) => new Future[C] {
@@ -50,6 +82,8 @@ object Par:
     }
 
   extension [A](par: Par[A]) def map[B](f: A => B): Par[B] = map2(par, unit(()))((a, _) => f(a))
+
+  extension [A](par: Par[A]) def flatMap[B](f: A => Par[B]): Par[B] = flatMap2(par, unit(()))((a, _) => f(a))
 
   def fork[A](par: => Par[A]): Par[A] = (es: ExecutorService) =>
     es.submit(new Callable[A] {

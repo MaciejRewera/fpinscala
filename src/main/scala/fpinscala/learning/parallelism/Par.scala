@@ -89,17 +89,11 @@ object Par:
       val (l, r) = list.splitAt(list.length / 2)
       map2(l.traverse(f), r.traverse(f))(_ ++ _)
 
-  def max(list: IndexedSeq[Int])(implicit ord: Ordering[Int]): Par[Option[Int]] =
-    list.parFold(_.headOption) { (optA1, optA2) => for { a1 <- optA1; a2 <- optA2 } yield ord.max(a1, a2) }
+  def max(list: IndexedSeq[Int]): Par[Option[Int]] =
+    list.parFoldMap(None)(Some(_)) { (optA1, optA2) => for { a1 <- optA1; a2 <- optA2 } yield Math.max(a1, a2) }
 
   def sum(list: IndexedSeq[Int]): Par[Int] =
-    list.parFold(_.headOption.getOrElse(0))(_ + _)
-
-  extension [A](list: IndexedSeq[A]) def parFold[B](z: IndexedSeq[A] => B)(f: (B, B) => B): Par[B] =
-    if (list.length <= 1) unit(z(list))
-    else
-      val (l, r) = list.splitAt(list.length / 2)
-      map2(l.parFold(z)(f), r.parFold(z)(f))(f)
+    list.parFoldMap(0)(identity)(_ + _)
 
   extension [A](list: IndexedSeq[A]) def parFoldMap[B](z: B)(f: A => B)(assocF: (B, B) => B): Par[B] =
     if (list.isEmpty) unit(z)

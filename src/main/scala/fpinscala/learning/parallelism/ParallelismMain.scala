@@ -11,24 +11,31 @@ object ParallelismMain:
 
   @main def parallelismTest = {
 
-    val singleParagraph = "This repository contains exercises, hints, and answers for the book Functional Programming in Scala. Along with the book itself, it's the closest you'll get to having your own private functional programming tutor without actually having one."
-    val singleParagraphLength = 36
-    val (paragraphs, paragraphsCreationTime) = measureExecutionTime { List.fill(1000000)(singleParagraph) }
-    println(s"paragraphsCreationTime: ${paragraphsCreationTime.toMillis} ms")
+    val (hugeList, hugeListCreationTime) = measureExecutionTime { List.fill(1000000)(Random.nextInt(1000)) }
+    println(s"hugeListCreationTime: ${hugeListCreationTime.toMillis} ms")
 
-    val (paragraphsCountedSequentially, paragraphsCountedSequentiallyTime) =
-      measureExecutionTime { paragraphs.foldLeft(0)((sum, p) => p.split(' ').length + sum) }
-    println(s"paragraphsCountedSequentially    : ${paragraphsCountedSequentially}")
-    println(s"paragraphsCountedSequentiallyTime: ${paragraphsCountedSequentiallyTime.toMillis} ms")
+    val (maxResult, maxTime) = measureExecutionTime { hugeList.max }
+    println(s"maxResult: ${maxResult}")
+    println(s"maxTime  : ${maxTime.toMillis} ms")
 
-    val (paragraphsCounted, paragraphsCountedTime) = measureExecutionTime { Par.countParagraphs(paragraphs) }
-    println(s"paragraphsCounted    : ${paragraphsCounted}")
-    println(s"paragraphsCountedTime: ${paragraphsCountedTime.toMillis} ms")
+    val (maxParResult, maxParTime) = measureExecutionTime { Par.max(hugeList.toIndexedSeq) }
+    println(s"maxParResult: ${maxParResult}")
+    println(s"maxParTime: ${maxParTime.toMillis} ms")
 
-    val (paragraphsCountedRunned, paragraphsCountedRunnedTime) = measureExecutionTime { paragraphsCounted(executorService).get() }
-    println(s"paragraphsCountedRunned    : ${paragraphsCountedRunned}")
-    println(s"paragraphsCountedRunnedTime: ${paragraphsCountedRunnedTime.toMillis} ms")
+    val (maxParRunnedResult, maxParRunnedTime) = measureExecutionTime { Par.run(executorService)(maxParResult).get() }
+    println(s"maxParRunnedResult: ${maxParRunnedResult}")
+    println(s"maxParRunnedTime  : ${maxParRunnedTime.toMillis} ms")
 
+
+    val shortList = List(1, 2, 3, 4, 5, 6)
+
+    val (sumParResult, sumParTime) = measureExecutionTime { Par.sum(shortList.toIndexedSeq) }
+    println(s"sumParResult: ${sumParResult}")
+    println(s"sumParTime  : ${sumParTime.toMillis} ms")
+
+    val (sumParRunnedResult, sumParRunnedTime) = measureExecutionTime { Par.run(executorService)(sumParResult).get() }
+    println(s"sumParRunnedResult: ${sumParRunnedResult}")
+    println(s"sumParRunnedTime  : ${sumParRunnedTime.toMillis} ms")
     executorService.shutdown()
   }
 

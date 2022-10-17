@@ -10,32 +10,24 @@ object ParallelismMain:
   private val executorService = Executors.newFixedThreadPool(10)
 
   @main def parallelismTest = {
-    def filterFunc(i: Int): Boolean = {
-      Thread.sleep(1)
-      i % 2 == 0
-    }
 
-    val (hugeList, hugeListCreationTime) = measureExecutionTime { List.fill(1000)(Random.nextInt(1000)) }
-    println(s"hugeListCreationTime: ${hugeListCreationTime.toMillis} ms")
+    val singleParagraph = "This repository contains exercises, hints, and answers for the book Functional Programming in Scala. Along with the book itself, it's the closest you'll get to having your own private functional programming tutor without actually having one."
+    val singleParagraphLength = 36
+    val (paragraphs, paragraphsCreationTime) = measureExecutionTime { List.fill(1000000)(singleParagraph) }
+    println(s"paragraphsCreationTime: ${paragraphsCreationTime.toMillis} ms")
 
-    val (hugeListMapped, hugeListMappedCreationTime) = measureExecutionTime { Par.parMap(hugeList)(_ + 1) }
-    println(s"hugeListMapped: ${hugeListMapped}")
-    println(s"hugeListMappedCreationTime    : ${hugeListMappedCreationTime.toMicros} micros")
+    val (paragraphsCountedSequentially, paragraphsCountedSequentiallyTime) =
+      measureExecutionTime { paragraphs.foldLeft(0)((sum, p) => p.split(' ').length + sum) }
+    println(s"paragraphsCountedSequentially    : ${paragraphsCountedSequentially}")
+    println(s"paragraphsCountedSequentiallyTime: ${paragraphsCountedSequentiallyTime.toMillis} ms")
 
-    val (hugeListMappedSlow, hugeListMappedSlowCreationTime) = measureExecutionTime { Par.parMapSlow(hugeList)(_ + 1) }
-    println(s"hugeListMappedSlowCreationTime: ${hugeListMappedSlowCreationTime.toMillis} ms")
+    val (paragraphsCounted, paragraphsCountedTime) = measureExecutionTime { Par.countParagraphs(paragraphs) }
+    println(s"paragraphsCounted    : ${paragraphsCounted}")
+    println(s"paragraphsCountedTime: ${paragraphsCountedTime.toMillis} ms")
 
-
-    val (hugeListFilteredPar, hugeListFilteredParTime) = measureExecutionTime { Par.parFilter(hugeList)(filterFunc) }
-    println(s"hugeListFilteredParTime: ${hugeListFilteredParTime.toMicros} micros")
-
-    val (hugeListFiltered, hugeListFilteredTime) = measureExecutionTime { hugeList.filter(filterFunc) }
-    println(s"Actual sequentially-filtered list: ${hugeListFiltered.take(100)}")
-    println(s"Actual sequentially-filtered list exec. time: ${hugeListFilteredTime.toMillis} ms")
-
-    val (hugeListFilteredRunned, hugeListFilteredRunnedTime) = measureExecutionTime { Par.run(executorService)(hugeListFilteredPar).get() }
-    println(s"Actual filtered list: ${hugeListFilteredRunned.take(100)}")
-    println(s"Actual filtered list exec. time: ${hugeListFilteredRunnedTime.toMillis} ms")
+    val (paragraphsCountedRunned, paragraphsCountedRunnedTime) = measureExecutionTime { paragraphsCounted(executorService).get() }
+    println(s"paragraphsCountedRunned    : ${paragraphsCountedRunned}")
+    println(s"paragraphsCountedRunnedTime: ${paragraphsCountedRunnedTime.toMillis} ms")
 
     executorService.shutdown()
   }

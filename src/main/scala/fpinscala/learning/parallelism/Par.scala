@@ -101,7 +101,18 @@ object Par:
       val (l, r) = list.splitAt(list.length / 2)
       map2(l.parFold(z)(f), r.parFold(z)(f))(f)
 
+  extension [A](list: IndexedSeq[A]) def parFoldMap[B](z: B)(f: A => B)(assocF: (B, B) => B): Par[B] =
+    if (list.isEmpty) unit(z)
+    else if (list.length == 1) unit(f(list.head))
+    else
+      val (l, r) = list.splitAt(list.length / 2)
+      map2(
+        l.parFoldMap(z)(f)(assocF),
+        r.parFoldMap(z)(f)(assocF)
+      )(assocF)
 
+  def countParagraphs(paragraphs: List[String]): Par[Int] =
+    paragraphs.toIndexedSeq.parFoldMap(0)(_.split(' ').length)(_ + _)
 
 
 

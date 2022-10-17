@@ -75,25 +75,16 @@ object Par:
   extension [A](list: Seq[Par[A]]) def sequenceSimple: Par[Seq[A]] =
     list.foldRight(unit(Seq.empty[A]))((par, acc) => map2(par, acc)(_ +: _))
 
-  extension [A](list: IndexedSeq[Par[A]]) def sequenceBalanced: Par[IndexedSeq[A]] =
-    if (list.isEmpty) unit(IndexedSeq.empty)
-    else if (list.length == 1) list.head.map(a => IndexedSeq(a))
-    else
-      val (l, r) = list.splitAt(list.length / 2)
-      map2(l.sequenceBalanced, r.sequenceBalanced)(_ ++ _)
+  extension [A](list: IndexedSeq[Par[A]]) def sequenceBalanced: Par[IndexedSeq[A]] = list.traverse(identity)
 
   def parFilter[A](list: Seq[A])(f: A => Boolean): Par[Seq[A]] = fork {
-    list.traverse(a => if f(a) then Seq(a) else Seq.empty).map(_.flatten)
+    list.toIndexedSeq.traverse(a => unit(if f(a) then Seq(a) else Seq.empty)).map(_.flatten)
   }
 
-  extension [A](list: Seq[A]) def traverse[B](f: A => B): Par[Seq[B]] = fork {
-    list.toIndexedSeq.traverse(f).map(_.toSeq)
-  }
-
-  extension [A](list: IndexedSeq[A]) def traverse[B](f: A => B): Par[IndexedSeq[B]] =
+  extension [A](list: IndexedSeq[A]) def traverse[B](f: A => Par[B]): Par[IndexedSeq[B]] =
     if (list.isEmpty) unit(IndexedSeq.empty)
     else if (list.length == 1)
-      unit(IndexedSeq(f(list.head)))
+      f(list.head).map(IndexedSeq(_))
     else
       val (l, r) = list.splitAt(list.length / 2)
       map2(l.traverse(f), r.traverse(f))(_ ++ _)

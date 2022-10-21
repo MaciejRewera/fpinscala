@@ -95,6 +95,9 @@ object Par:
   def run[A](es: ExecutorService)(par: Par[A]): Future[A] = par(es)
 
   def asyncF[A, B](f: A => B): A => Par[B] = a => lazyUnit(f(a))
+  
+  def equal[A](es: ExecutorService)(p1: Par[A], p2: Par[A]): Boolean =
+    p1(es).get == p2(es).get
 
   def sortPar[A](parList: Par[Seq[A]])(implicit ord: Ordering[A]): Par[Seq[A]] =
     parList.map(_.sorted(ord))

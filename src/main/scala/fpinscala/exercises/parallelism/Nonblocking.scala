@@ -121,14 +121,14 @@ object Nonblocking:
       }
 
     /* The code here is very similar. */
-    def choiceN[A](p: Par[Int])(ps: List[Par[A]]): Par[A] =
-      es => cb => p(es) { i => eval(es)(ps(i % ps.size)(es)(cb)) }
+    def choiceN[A](p: Par[Int])(choices: List[Par[A]]): Par[A] =
+      es => cb => p(es) { i => eval(es)(choices(i % choices.size)(es)(cb)) }
 
     def choiceViaChoiceN[A](a: Par[Boolean])(ifTrue: Par[A], ifFalse: Par[A]): Par[A] =
       choiceN(a.map(b => if b then 0 else 1))(List(ifTrue, ifFalse))
 
-    def choiceMap[K, V](p: Par[K])(ps: Map[K, Par[V]]): Par[V] =
-      ???
+    def choiceMap[K, V](p: Par[K])(choices: Map[K, Par[V]]): Par[V] =
+      es => cb => p(es) { k => eval(es)(choices(k)(es)(cb)) }
 
     /* `chooser` is usually called `flatMap` or `bind`. */
     def chooser[A, B](p: Par[A])(f: A => Par[B]): Par[B] =

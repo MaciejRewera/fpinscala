@@ -172,3 +172,11 @@ object Par:
 
   def choiceNViaFlatMap[A](n: Par[Int])(choices: List[Par[A]]): Par[A] =
     n.flatMap { i => choices(i % choices.size) }
+
+  def join[A](a: Par[Par[A]]): Par[A] = es =>
+    a.run(es).get.run(es)
+
+  extension [A](par: Par[A]) def flatMapViaJoin[B](f: A => Par[B]): Par[B] =
+    join(par.map(f))
+
+  def joinViaFlatMap[A](a: Par[Par[A]]): Par[A] = a.flatMap(identity)

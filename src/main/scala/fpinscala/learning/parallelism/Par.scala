@@ -161,3 +161,6 @@ object Par:
   def choiceMap[K, V](key: Par[K])(choices: Map[K, Par[V]]): Par[V] = es =>
     val k = key.run(es).get
     choices(k).run(es)
+
+  def chooser[A, B](pa: Par[A])(choice: A => Par[B]): Par[B] =
+    pa.flatMap(choice)

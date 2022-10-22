@@ -166,3 +166,9 @@ object Par:
 
   def chooser[A, B](pa: Par[A])(choice: A => Par[B]): Par[B] =
     pa.flatMap(choice)
+
+  def choiceViaFlatMap[A](cons: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
+    cons.flatMap { b => if b then t else f }
+
+  def choiceNViaFlatMap[A](n: Par[Int])(choices: List[Par[A]]): Par[A] =
+    n.flatMap { i => choices(i % choices.size) }

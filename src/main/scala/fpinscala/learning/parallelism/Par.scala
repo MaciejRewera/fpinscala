@@ -83,7 +83,9 @@ object Par:
 
   extension [A](par: Par[A]) def map[B](f: A => B): Par[B] = map2(par, unit(()))((a, _) => f(a))
 
-  extension [A](par: Par[A]) def flatMap[B](f: A => Par[B]): Par[B] = flatMap2(par, unit(()))((a, _) => f(a))
+  extension [A](par: Par[A]) def flatMap[B](f: A => Par[B]): Par[B] = es =>
+    val a = par.run(es).get
+    f(a).run(es)
 
   def fork[A](par: => Par[A]): Par[A] = (es: ExecutorService) =>
     es.submit(new Callable[A] {

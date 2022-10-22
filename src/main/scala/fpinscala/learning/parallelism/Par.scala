@@ -92,7 +92,7 @@ object Par:
 
   def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
 
-  def run[A](es: ExecutorService)(par: Par[A]): Future[A] = par(es)
+  extension [A](par: Par[A]) def run(es: ExecutorService): Future[A] = par(es)
 
   def asyncF[A, B](f: A => B): A => Par[B] = a => lazyUnit(f(a))
   
@@ -145,5 +145,15 @@ object Par:
   def countParagraphs(paragraphs: List[String]): Par[Int] =
     paragraphs.toIndexedSeq.parFoldMap(0)(_.split(' ').length)(_ + _)
 
+  def choice[A](cons: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = es =>
+    cons.run(es).get match {
+      case true => t(es)
+      case false => f(es)
+    }
 
+  def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = es =>
+    val index = n.run(es).get % choices.size
+    choices(index)(es)
 
+  def choiceViaChoiceN[A](cons: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
+    choiceN(cons.map { b => if b then 0 else 1 })(List(t, f))

@@ -140,11 +140,11 @@ object Nonblocking:
     def choiceNViaFlatMap[A](p: Par[Int])(choices: List[Par[A]]): Par[A] =
       p.flatMap(i => choices(i))
 
-    def join[A](p: Par[Par[A]]): Par[A] =
-      ???
+    def join[A](ppa: Par[Par[A]]): Par[A] =
+      es => cb => ppa(es)(pa => eval(es)(pa(es)(cb)))
 
-    def joinViaFlatMap[A](a: Par[Par[A]]): Par[A] =
-      ???
+    def joinViaFlatMap[A](ppa: Par[Par[A]]): Par[A] =
+      ppa.flatMap(identity)
 
-    def flatMapViaJoin[A,B](p: Par[A])(f: A => Par[B]): Par[B] =
-      ???
+    def flatMapViaJoin[A,B](pa: Par[A])(f: A => Par[B]): Par[B] =
+      join(pa.map(f))

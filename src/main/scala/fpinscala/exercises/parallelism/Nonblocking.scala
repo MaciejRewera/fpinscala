@@ -135,10 +135,10 @@ object Nonblocking:
       p.flatMap(f)
 
     def choiceViaFlatMap[A](p: Par[Boolean])(f: Par[A], t: Par[A]): Par[A] =
-      ???
+      p.flatMap(b => if b then t else f)
 
     def choiceNViaFlatMap[A](p: Par[Int])(choices: List[Par[A]]): Par[A] =
-      ???
+      p.flatMap(i => choices(i))
 
     def join[A](p: Par[Par[A]]): Par[A] =
       ???

@@ -1,19 +1,26 @@
 package fpinscala.exercises.testing
 
-import fpinscala.exercises.state.*
 import fpinscala.exercises.parallelism.*
 import fpinscala.exercises.parallelism.Par.Par
-import Gen.*
-import Prop.*
-import java.util.concurrent.{Executors,ExecutorService}
+import fpinscala.exercises.state.*
+import fpinscala.exercises.testing.Gen.*
+import fpinscala.exercises.testing.Prop.*
+
+import java.util.concurrent.{ExecutorService, Executors}
 
 /*
 The library developed in this chapter goes through several iterations. This file is just the
 shell, which you can fill in and modify while working through the chapter.
 */
 
-trait Prop
+trait Prop:
+  self =>
 
+  def check: Boolean
+
+  def &&(other: Prop): Prop = new Prop {
+    override def check: Boolean = self.check && other.check
+  }
 
 object Prop:
   def forAll[A](gen: Gen[A])(f: A => Boolean): Prop = ???

@@ -16,13 +16,16 @@ shell, which you can fill in and modify while working through the chapter.
 trait Prop:
   self =>
 
-  def check: Boolean
+  def check: Either[(FailedCase, SuccessCount), SuccessCount]
 
   def &&(other: Prop): Prop = new Prop {
-    override def check: Boolean = self.check && other.check
+    override def check: Either[(FailedCase, SuccessCount), SuccessCount] = self.check flatMap (_ => other.check)
   }
 
 object Prop:
+  type FailedCase = String
+  type SuccessCount = Int
+
   def forAll[A](gen: Gen[A])(f: A => Boolean): Prop = ???
 
 object Gen:

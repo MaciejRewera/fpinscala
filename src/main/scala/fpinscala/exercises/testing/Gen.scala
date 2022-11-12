@@ -28,14 +28,24 @@ object Prop:
 
   def forAll[A](gen: Gen[A])(f: A => Boolean): Prop = ???
 
+
+//opaque type Gen[A] = State[RNG, A]
+
+case class Gen[A](sample: State[RNG, A]):
+  self =>
+  
+  def next(rng: RNG): (A, RNG) = self.sample.run(rng)
+
 object Gen:
-  def unit[A](a: => A): Gen[A] = ???
+  def choose(start: Int, stopExclusive: Int): Gen[Int] = Gen(State(RNG.nonNegativeLessThan(stopExclusive - start)).map(_ + start))
+
+  def unit[A](a: => A): Gen[A] = Gen(State.unit(a))
 
   extension [A](self: Gen[A])
     def flatMap[B](f: A => Gen[B]): Gen[B] = ???
 
-trait Gen[A]:
-  def map[B](f: A => B): Gen[B] = ???
-  def flatMap[B](f: A => Gen[B]): Gen[B] = ???
+//trait Gen[A]:
+//  def map[B](f: A => B): Gen[B] = ???
+//  def flatMap[B](f: A => Gen[B]): Gen[B] = ???
 
 trait SGen[+A]

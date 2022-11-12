@@ -26,7 +26,7 @@ object Gen:
 */
 
 // Gen tests:
-/*
+
   test("Exercise 8.4")(ExhGen.int ** ExhGen.int ** genRNG) { case n ** m ** rng =>
     val (start, stopExclusive) = if n < m then (n, m) else (m, n)
     val (k, _) = Gen.choose(start, stopExclusive).next(rng)
@@ -40,7 +40,7 @@ object Gen:
     val (n2, _) = genUnit.next(rng1)
     assertEquals(n2, n)
   }
-
+/*
   test("Exercise 8.5, boolean + listOfN")(genShortNumber ** genRNG) { case n ** rng0 =>
     val (randomBooleanList, rng1) = Gen.boolean.listOfN(shortSample).next(rng0)
     assert(randomBooleanList.contains(true), "'Gen.boolean' should not generate only 'false' values")

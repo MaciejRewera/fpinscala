@@ -19,7 +19,8 @@ trait Prop:
   def check: Either[(FailedCase, SuccessCount), SuccessCount]
 
   def &&(other: Prop): Prop = new Prop {
-    override def check: Either[(FailedCase, SuccessCount), SuccessCount] = self.check flatMap (_ => other.check)
+    override def check: Either[(FailedCase, SuccessCount), SuccessCount] =
+      self.check flatMap (_ => other.check)
   }
 
 object Prop:
@@ -37,9 +38,15 @@ case class Gen[A](sample: State[RNG, A]):
   def next(rng: RNG): (A, RNG) = self.sample.run(rng)
 
 object Gen:
-  def choose(start: Int, stopExclusive: Int): Gen[Int] = Gen(State(RNG.nonNegativeLessThan(stopExclusive - start)).map(_ + start))
+  def choose(start: Int, stopExclusive: Int): Gen[Int] =
+    Gen(State(RNG.nonNegativeLessThan(stopExclusive - start)).map(_ + start))
 
   def unit[A](a: => A): Gen[A] = Gen(State.unit(a))
+
+  def boolean: Gen[Boolean] = Gen(State(RNG.boolean))
+
+  def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] =
+    Gen(State.traverse(Range(0, n).toList)(_ => g.sample))
 
   extension [A](self: Gen[A])
     def flatMap[B](f: A => Gen[B]): Gen[B] = ???

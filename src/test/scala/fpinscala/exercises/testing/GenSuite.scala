@@ -40,16 +40,16 @@ object Gen:
     val (n2, _) = genUnit.next(rng1)
     assertEquals(n2, n)
   }
-/*
+
   test("Exercise 8.5, boolean + listOfN")(genShortNumber ** genRNG) { case n ** rng0 =>
-    val (randomBooleanList, rng1) = Gen.boolean.listOfN(shortSample).next(rng0)
+    val (randomBooleanList, rng1) = Gen.listOfN(shortSample, Gen.boolean).next(rng0)
     assert(randomBooleanList.contains(true), "'Gen.boolean' should not generate only 'false' values")
     assert(randomBooleanList.contains(false), "'Gen.boolean' should not generate only 'true' values")
 
-    val (randomBooleanList1, _) = Gen.boolean.listOfN(n).next(rng1)
+    val (randomBooleanList1, _) = Gen.listOfN(n, Gen.boolean).next(rng1)
     assertEquals(randomBooleanList1.length, n)
   }
-
+/*
   test("Exercise 8.6, flatMap")(ExhGen.int ** genRNG) { case n ** rng =>
     val genA = Gen.unit(n)
     def aToGenB(a: Int) = Gen.unit(a % 2 == 0)

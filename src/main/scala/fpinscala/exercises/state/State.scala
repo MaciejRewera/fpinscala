@@ -27,6 +27,11 @@ object RNG:
     val (i, newRng) = rng.nextInt
     val positiveInt = if i < 0 then -(i + 1) else i
     (positiveInt, newRng)
+    
+  def boolean(rng: RNG): (Boolean, RNG) =
+    val (i, newRng) = rng.nextInt
+    val booleanResult = if (i % 2 == 0) true else false
+    (booleanResult, newRng)
 
   def double(rng: RNG): (Double, RNG) =
     val (i, newRng) = nonNegativeInt(rng)

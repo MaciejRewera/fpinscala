@@ -68,6 +68,19 @@ object Gen:
     assert(genOptValue.contains(genUnitValue))
   }
 
+  test("Exercise 8.5.X, fromOption")(ExhGen.int ** genRNG) { case n ** rng =>
+    val genUnit = Gen.unit(n)
+    val genSome: Gen[Option[Int]] = Gen.unit(Some(n))
+    val genNone: Gen[Option[Int]] = Gen.unit(None)
+    val (genUnitValue, _) = genUnit.next(rng)
+    val (genSomeValue, _) = Gen.fromOption(genSome, -1).next(rng)
+
+    assert(genSomeValue == genUnitValue)
+    
+    val (genNoneValue, _) = Gen.fromOption(genNone, -1).next(rng)
+    assert(genNoneValue == -1)
+  }
+
 /*
   test("Exercise 8.6, flatMap")(ExhGen.int ** genRNG) { case n ** rng =>
     val genA = Gen.unit(n)

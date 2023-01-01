@@ -39,7 +39,6 @@ case class Gen[A](sample: State[RNG, A]):
 
   def toOption: Gen[Option[A]] = Gen(self.sample.map(Some(_)))
 
-
 object Gen:
   def choose(start: Int, stopExclusive: Int): Gen[Int] =
     Gen(State(RNG.nonNegativeLessThan(stopExclusive - start)).map(_ + start))
@@ -57,6 +56,8 @@ object Gen:
       val (secondInt, newRng2) = Gen.choose(start, stopExclusive).next(newRng)
       ((firstInt, secondInt), newRng2)
   ))
+
+  def fromOption[A](gen: Gen[Option[A]], orElse: => A): Gen[A] = Gen(gen.sample.map(_.getOrElse(orElse)))
 
   extension [A](self: Gen[A])
     def flatMap[B](f: A => Gen[B]): Gen[B] = ???

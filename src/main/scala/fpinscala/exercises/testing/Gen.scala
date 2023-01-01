@@ -59,6 +59,14 @@ object Gen:
 
   def fromOption[A](gen: Gen[Option[A]], orElse: => A): Gen[A] = Gen(gen.sample.map(_.getOrElse(orElse)))
 
+  def char: Gen[Char] = {
+    def intToChar(i: Int): Char = (if i == 34 then i + 1 else i).toChar
+
+    Gen(Gen.choose(33, 127).sample.map(intToChar))
+  }
+
+  def string(length: Int): Gen[String] = Gen(Gen.listOfN[Char](length, char).sample.map(_.mkString))
+
   extension [A](self: Gen[A])
     def flatMap[B](f: A => Gen[B]): Gen[B] = ???
 

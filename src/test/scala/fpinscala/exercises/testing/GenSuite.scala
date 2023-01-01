@@ -76,9 +76,15 @@ object Gen:
     val (genSomeValue, _) = Gen.fromOption(genSome, -1).next(rng)
 
     assert(genSomeValue == genUnitValue)
-    
+
     val (genNoneValue, _) = Gen.fromOption(genNone, -1).next(rng)
     assert(genNoneValue == -1)
+  }
+
+  test("Exercise 8.5.X, string")(genRNG) { case rng =>
+    val (genString, _) = Gen.string(shortSample).next(rng)
+
+    assert(genString.length == shortSample)
   }
 
 /*

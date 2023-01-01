@@ -87,14 +87,13 @@ object Gen:
     assert(genString.length == shortSample)
   }
 
-/*
   test("Exercise 8.6, flatMap")(ExhGen.int ** genRNG) { case n ** rng =>
     val genA = Gen.unit(n)
     def aToGenB(a: Int) = Gen.unit(a % 2 == 0)
     val (isEven, _) = genA.flatMap(aToGenB).next(rng)
     assertEquals(n % 2 == 0, isEven)
   }
-
+/*
   test("Exercise 8.6, listOfN")(genShortNumber ** genRNG) { case n ** rng =>
     val (randomBooleanList, _) = Gen.boolean.listOfN(Gen.unit(n)).next(rng)
     assertEquals(randomBooleanList.length, n)

@@ -30,45 +30,46 @@ object Prop:
   def forAll[A](gen: Gen[A])(f: A => Boolean): Prop = ???
 
 
-//opaque type Gen[A] = State[RNG, A]
-
-case class Gen[A](sample: State[RNG, A]):
-  self =>
-  
-  def next(rng: RNG): (A, RNG) = self.sample.run(rng)
-
-  def toOption: Gen[Option[A]] = Gen(self.sample.map(Some(_)))
+opaque type Gen[A] = State[RNG, A]
 
 object Gen:
   def choose(start: Int, stopExclusive: Int): Gen[Int] =
-    Gen(State(RNG.nonNegativeLessThan(stopExclusive - start)).map(_ + start))
+    State(RNG.nonNegativeLessThan(stopExclusive - start)).map(_ + start)
 
-  def unit[A](a: => A): Gen[A] = Gen(State.unit(a))
+  def unit[A](a: => A): Gen[A] = State.unit(a)
 
-  def boolean: Gen[Boolean] = Gen(State(RNG.boolean))
+  def boolean: Gen[Boolean] = State(RNG.boolean)
 
   def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] =
-    Gen(State.traverse(Range(0, n).toList)(_ => g.sample))
+    State.traverse(Range(0, n).toList)(_ => g)
     
-  def choose2(start: Int, stopExclusive: Int): Gen[(Int, Int)] = Gen(State(
-    (rng: RNG) =>
+  def choose2(start: Int, stopExclusive: Int): Gen[(Int, Int)] = State { (rng: RNG) =>
       val (firstInt, newRng) = Gen.choose(start, stopExclusive).next(rng)
       val (secondInt, newRng2) = Gen.choose(start, stopExclusive).next(newRng)
       ((firstInt, secondInt), newRng2)
-  ))
+  }
 
-  def fromOption[A](gen: Gen[Option[A]], orElse: => A): Gen[A] = Gen(gen.sample.map(_.getOrElse(orElse)))
+  def fromOption[A](gen: Gen[Option[A]], orElse: => A): Gen[A] = gen.map(_.getOrElse(orElse))
 
   def char: Gen[Char] = {
     def intToChar(i: Int): Char = (if i == 34 then i + 1 else i).toChar
 
-    Gen(Gen.choose(33, 127).sample.map(intToChar))
+    Gen.choose(33, 127).map(intToChar)
   }
 
-  def string(length: Int): Gen[String] = Gen(Gen.listOfN[Char](length, char).sample.map(_.mkString))
+  def string(length: Int): Gen[String] = Gen.listOfN[Char](length, char).map(_.mkString)
 
   extension [A](self: Gen[A])
-    def flatMap[B](f: A => Gen[B]): Gen[B] = ???
+    def next(rng: RNG): (A, RNG) = self.run(rng)
+
+    def toOption: Gen[Option[A]] = self.map(Some(_))
+
+    def flatMap[B](f: A => Gen[B]): Gen[B] = State { (rng: RNG) =>
+      val (value, newRng) = self.next(rng)
+      f(value).next(newRng)
+    }
+
+    def map[B](f: A => B): Gen[B] = flatMap(a => Gen.unit(f(a)))
 
 //trait Gen[A]:
 //  def map[B](f: A => B): Gen[B] = ???

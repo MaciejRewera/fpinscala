@@ -47,6 +47,13 @@ object Gen:
 
   def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] =
     Gen(State.traverse(Range(0, n).toList)(_ => g.sample))
+    
+  def choose2(start: Int, stopExclusive: Int): Gen[(Int, Int)] = Gen(State(
+    (rng: RNG) =>
+      val (firstInt, newRng) = Gen.choose(start, stopExclusive).next(rng)
+      val (secondInt, newRng2) = Gen.choose(start, stopExclusive).next(newRng)
+      ((firstInt, secondInt), newRng2)
+  ))
 
   extension [A](self: Gen[A])
     def flatMap[B](f: A => Gen[B]): Gen[B] = ???

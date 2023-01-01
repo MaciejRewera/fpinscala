@@ -93,12 +93,12 @@ object Gen:
     val (isEven, _) = genA.flatMap(aToGenB).next(rng)
     assertEquals(n % 2 == 0, isEven)
   }
-/*
+
   test("Exercise 8.6, listOfN")(genShortNumber ** genRNG) { case n ** rng =>
     val (randomBooleanList, _) = Gen.boolean.listOfN(Gen.unit(n)).next(rng)
     assertEquals(randomBooleanList.length, n)
   }
-
+/*
   test("Exercise 8.7")(ExhGen.int ** ExhGen.int ** genRNG) { case n ** m ** rng =>
     val genUnion = Gen.union(Gen.unit(n), Gen.unit(m))
     val genUnionList = genUnion.listOfN(shortSample)

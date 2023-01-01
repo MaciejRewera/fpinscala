@@ -71,6 +71,8 @@ object Gen:
 
     def map[B](f: A => B): Gen[B] = flatMap(a => Gen.unit(f(a)))
 
+    def listOfN(size: Gen[Int]): Gen[List[A]] = size.flatMap(Gen.listOfN(_, self))
+
 //trait Gen[A]:
 //  def map[B](f: A => B): Gen[B] = ???
 //  def flatMap[B](f: A => Gen[B]): Gen[B] = ???

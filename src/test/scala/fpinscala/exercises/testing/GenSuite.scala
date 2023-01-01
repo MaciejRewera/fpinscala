@@ -52,10 +52,20 @@ object Gen:
 
   test("Exercise 8.5.X, choose2")(ExhGen.int ** ExhGen.int ** genRNG) { case n ** m ** rng =>
     val (start, stopExclusive) = if n < m then (n, m) else (m, n)
+
     val ((k1, k2), _) = Gen.choose2(start, stopExclusive).next(rng)
+
     assert(start <= k1 && k1 <= stopExclusive)
     assert(start <= k2 && k2 <= stopExclusive)
     assert(k1 != k2)
+  }
+
+  test("Exercise 8.5.X, toOption")(ExhGen.int ** genRNG) { case n ** rng =>
+    val genUnit = Gen.unit(n)
+    val (genUnitValue, _) = genUnit.next(rng)
+    val (genOptValue, _) = genUnit.toOption.next(rng)
+
+    assert(genOptValue.contains(genUnitValue))
   }
 
 /*

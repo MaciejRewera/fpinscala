@@ -37,6 +37,9 @@ case class Gen[A](sample: State[RNG, A]):
   
   def next(rng: RNG): (A, RNG) = self.sample.run(rng)
 
+  def toOption: Gen[Option[A]] = Gen(self.sample.map(Some(_)))
+
+
 object Gen:
   def choose(start: Int, stopExclusive: Int): Gen[Int] =
     Gen(State(RNG.nonNegativeLessThan(stopExclusive - start)).map(_ + start))

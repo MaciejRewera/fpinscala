@@ -38,7 +38,7 @@ object Gen:
 
   def unit[A](a: => A): Gen[A] = State.unit(a)
 
-  def boolean: Gen[Boolean] = State(RNG.boolean)
+  val boolean: Gen[Boolean] = State(RNG.boolean)
 
   def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] =
     State.traverse(Range(0, n).toList)(_ => g)
@@ -51,13 +51,18 @@ object Gen:
 
   def fromOption[A](gen: Gen[Option[A]], orElse: => A): Gen[A] = gen.map(_.getOrElse(orElse))
 
-  def char: Gen[Char] = {
+  val char: Gen[Char] = {
     def intToChar(i: Int): Char = (if i == 34 then i + 1 else i).toChar
 
     Gen.choose(33, 127).map(intToChar)
   }
 
   def string(length: Int): Gen[String] = Gen.listOfN[Char](length, char).map(_.mkString)
+
+  def union[A](gen1: Gen[A], gen2: Gen[A]): Gen[A] = Gen.boolean.flatMap {
+    case true => gen1
+    case false => gen2
+  }
 
   extension [A](self: Gen[A])
     def next(rng: RNG): (A, RNG) = self.run(rng)
@@ -71,7 +76,9 @@ object Gen:
 
     def map[B](f: A => B): Gen[B] = flatMap(a => Gen.unit(f(a)))
 
-    def listOfN(size: Gen[Int]): Gen[List[A]] = size.flatMap(Gen.listOfN(_, self))
+    def listOfN(size: Int): Gen[List[A]] = Gen.listOfN(size, self)
+
+    def listOfN(size: Gen[Int]): Gen[List[A]] = size.flatMap(listOfN(_))
 
 //trait Gen[A]:
 //  def map[B](f: A => B): Gen[B] = ???

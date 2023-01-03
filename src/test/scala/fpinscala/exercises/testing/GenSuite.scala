@@ -106,7 +106,7 @@ object Gen:
     assert(unionList.count(_ == n) >= shortSample / 3, "Values should be extracted with approximately equal likelihood")
     assert(unionList.count(_ == m) >= shortSample / 3, "Values should be extracted with approximately equal likelihood")
   }
-/*
+
   test("Exercise 8.8")(ExhGen.int ** ExhGen.int ** genRNG) { case n ** m ** rng =>
     val genUnion0 = Gen.weighted((Gen.unit(n), 0.0), (Gen.unit(m), 1.0))
     val (unionList0, _) = genUnion0.listOfN(shortSample).next(rng)
@@ -128,7 +128,6 @@ object Gen:
     assert(unionList3.count(_ == n) >= shortSample / 5, "g2 is twice as common as g1")
     assert(unionList3.count(_ == m) >= shortSample / 2, "g2 is twice as common as g1")
   }
-*/
 
 
 // Prop tests: Before using these tests (starting from Exercise 8.9),

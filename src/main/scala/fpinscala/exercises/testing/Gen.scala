@@ -63,6 +63,10 @@ object Gen:
     case true => gen1
     case false => gen2
   }
+  
+  def weighted[A](g1: (Gen[A], Double), g2: (Gen[A], Double)): Gen[A] =
+    val threshold = g1._2.abs / (g1._2.abs + g2._2.abs)
+    State(RNG.double).flatMap(w => if w < threshold then g1._1 else g2._1)
 
   extension [A](self: Gen[A])
     def next(rng: RNG): (A, RNG) = self.run(rng)

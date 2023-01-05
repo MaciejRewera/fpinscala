@@ -16,13 +16,21 @@ object Monoid:
     def combine(a1: List[A], a2: List[A]) = a1 ++ a2
     val empty = Nil
 
-  lazy val intAddition: Monoid[Int] = ???
+  lazy val intAddition: Monoid[Int] = new:
+    def combine(a1: Int, a2: Int): Int = a1 + a2
+    val empty: Int = 0
 
-  lazy val intMultiplication: Monoid[Int] = ???
+  lazy val intMultiplication: Monoid[Int] = new:
+    def combine(a1: Int, a2: Int): Int = a1 * a2
+    val empty: Int = 1
 
-  lazy val booleanOr: Monoid[Boolean] = ???
+  lazy val booleanOr: Monoid[Boolean] = new:
+    def combine(a1: Boolean, a2: Boolean): Boolean = a1 || a2
+    val empty: Boolean = false
 
-  lazy val booleanAnd: Monoid[Boolean] = ???
+  lazy val booleanAnd: Monoid[Boolean] = new:
+    def combine(a1: Boolean, a2: Boolean): Boolean = a1 && a2
+    val empty: Boolean = true
 
   def optionMonoid[A]: Monoid[Option[A]] = ???
 
@@ -32,7 +40,7 @@ object Monoid:
 
   def endoMonoid[A]: Monoid[A => A] = ???
 
-  import fpinscala.exercises.testing.{Prop, Gen}
+  import fpinscala.exercises.testing.{Gen, Prop}
   // import Gen.`**`
 
   def monoidLaws[A](m: Monoid[A], gen: Gen[A]): Prop = ???

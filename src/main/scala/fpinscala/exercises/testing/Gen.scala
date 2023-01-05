@@ -5,6 +5,7 @@ import fpinscala.exercises.parallelism.Par.Par
 import fpinscala.exercises.state.*
 import fpinscala.exercises.testing.Gen.*
 import fpinscala.exercises.testing.Prop.*
+import fpinscala.exercises.testing.Prop.Result.{Falsified, Passed}
 
 import java.util.concurrent.{ExecutorService, Executors}
 
@@ -26,9 +27,35 @@ trait Prop:
 object Prop:
   type FailedCase = String
   type SuccessCount = Int
+  type TestCases = Int
 
-  def forAll[A](gen: Gen[A])(f: A => Boolean): Prop = ???
+  enum Result:
+    case Passed
+    case Falsified(failure: FailedCase, successes: SuccessCount)
 
+    def isFalsified: Boolean = this match
+      case Passed => false
+      case Falsified(_, _) => true
+
+  case class Prop(run: (TestCases, RNG) => Result)
+
+  def forAll[A](gen: Gen[A])(f: A => Boolean): Prop = Prop {
+    (n, rng) => randomLazyList(gen)(rng).zip(LazyList.from(0)).take(n).map {
+      case (generatedInput, i) =>
+        try
+          if f(generatedInput) then Passed else Falsified(generatedInput.toString, i)
+        catch
+          case e: Exception => Falsified(buildMsg(generatedInput, e), i)
+    }.find(_.isFalsified).getOrElse(Passed)
+  }
+
+  def randomLazyList[A](g: Gen[A])(rng: RNG): LazyList[A] =
+    LazyList.unfold(rng)(rng => Some(g.next(rng)))
+
+  def buildMsg[A](s: A, e: Exception): String =
+    s"test case: $s\n" +
+    s"generated an exception: ${e.getMessage}\n" +
+    s"stack trace:\n ${e.getStackTrace.mkString("\n")}"
 
 opaque type Gen[A] = State[RNG, A]
 

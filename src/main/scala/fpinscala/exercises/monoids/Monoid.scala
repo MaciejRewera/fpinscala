@@ -50,7 +50,7 @@ object Monoid:
   def monoidLaws[A](m: Monoid[A], gen: Gen[A]): Prop = ???
 
   def combineAll[A](as: List[A], m: Monoid[A]): A =
-    ???
+    as.foldLeft(m.empty)((a1, a2) => m.combine(a1, a2))
 
   def foldMap[A, B](as: List[A], m: Monoid[B])(f: A => B): B =
     ???

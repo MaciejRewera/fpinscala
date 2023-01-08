@@ -56,10 +56,10 @@ object Monoid:
     as.foldLeft(m.empty)((b, a) => m.combine(b, f(a)))
 
   def foldRight[A, B](as: List[A])(acc: B)(f: (A, B) => B): B =
-    ???
+    foldMap(as, dual(endoMonoid))(f.curried)(acc)
 
   def foldLeft[A, B](as: List[A])(acc: B)(f: (B, A) => B): B =
-    ???
+    foldMap(as, endoMonoid)(a => b => f(b, a))(acc)
 
   def foldMapV[A, B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): B =
     ???

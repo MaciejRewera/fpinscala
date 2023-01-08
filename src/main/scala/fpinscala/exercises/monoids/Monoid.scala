@@ -62,18 +62,21 @@ object Monoid:
     foldMap(as, endoMonoid)(a => b => f(b, a))(acc)
 
   def foldMapV[A, B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): B =
-    if as.length < 1 then m.empty
+    if as.isEmpty then m.empty
     else if as.length == 1 then f(as.head)
     else
       val splitIdx = as.length / 2
       val (firstHalf, secondHalf) = as.splitAt(splitIdx)
       m.combine(foldMapV(firstHalf, m)(f), foldMapV(secondHalf, m)(f))
 
-  def par[A](m: Monoid[A]): Monoid[Par[A]] = 
-    ???
+  def par[A](m: Monoid[A]): Monoid[Par[A]] = new:
+    def combine(p1: Par[A], p2: Par[A]): Par[A] = p1.map2(p2)(m.combine)
+    val empty: Par[A] = Par.unit(m.empty)
 
-  def parFoldMap[A,B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = 
-    ???
+  def parFoldMap[A,B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] =
+    Par.parMap(as)(f).flatMap { list =>
+      foldMapV(list, par(m))(b => Par.delay(b))
+    }
 
   def ordered(ints: IndexedSeq[Int]): Boolean =
     ???

@@ -78,8 +78,27 @@ object Monoid:
       foldMapV(list, par(m))(b => Par.delay(b))
     }
 
+  case class Interval(ordered: Boolean, min: Int, max: Int)
+
+  def orderingMonoid: Monoid[Option[Interval]] = new :
+    def combine(oa1: Option[Interval], oa2: Option[Interval]): Option[Interval] =
+      (oa1, oa2) match {
+        case (Some(a1), Some(a2)) => Some(
+          Interval(
+            a1.ordered && a2.ordered && a1.max < a2.min,
+            a1.min,
+            a2.max
+          )
+        )
+        case (a, None) => a
+        case (None, a) => a
+      }
+
+    val empty: Option[Interval] = None
+
   def ordered(ints: IndexedSeq[Int]): Boolean =
-    ???
+    foldMapV(ints, orderingMonoid)(i => Some(Interval(true, i, i)))
+      .forall(_.ordered)
 
   enum WC:
     case Stub(chars: String)

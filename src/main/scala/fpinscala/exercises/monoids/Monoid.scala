@@ -1,5 +1,6 @@
 package fpinscala.exercises.monoids
 
+import fpinscala.exercises.monoids.Monoid.WC.{Part, Stub}
 import fpinscala.exercises.parallelism.Nonblocking.*
 
 trait Monoid[A]:
@@ -104,7 +105,14 @@ object Monoid:
     case Stub(chars: String)
     case Part(lStub: String, words: Int, rStub: String)
 
-  lazy val wcMonoid: Monoid[WC] = ???
+  lazy val wcMonoid: Monoid[WC] = new:
+    def combine(wc1: WC, wc2: WC): WC = (wc1, wc2) match
+      case (Stub(c1), Stub(c2)) => Stub(c1 + c2)
+      case (Stub(c), Part(l, w, r)) => Part(c + l, w, r)
+      case (Part(l, w, r), Stub(c)) => Part(l, w, r + c)
+      case (Part(l1, w1, r1), Part(l2, w2, r2)) => Part(l1, w1 + w2 + (if (r1 + l2).isEmpty then 0 else 1), r2)
+
+    val empty: WC = Stub("")
 
   def count(s: String): Int = ???
 

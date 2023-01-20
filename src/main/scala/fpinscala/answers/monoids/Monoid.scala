@@ -171,7 +171,9 @@ object Monoid:
         WC.Part("", 0, "")
       else
         WC.Stub(c.toString)
+        
     def unstub(s: String) = if s.isEmpty then 0 else 1
+    
     foldMapV(s.toIndexedSeq, wcMonoid)(wc) match
       case WC.Stub(s) => unstub(s)
       case WC.Part(l, w, r) => unstub(l) + w + unstub(r)

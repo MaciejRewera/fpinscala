@@ -128,8 +128,8 @@ object Monoid:
   }
 
   given productMonoid[A, B](using ma: Monoid[A], mb: Monoid[B]): Monoid[(A, B)] with
-    def combine(x: (A, B), y: (A, B)) = ???
-    val empty = ???
+    def combine(x: (A, B), y: (A, B)): (A, B) = (ma.combine(x._1, y._1), mb.combine(x._2, y._2))
+    val empty: (A, B) = (ma.empty, mb.empty)
 
   given functionMonoid[A, B](using mb: Monoid[B]): Monoid[A => B] with
     def combine(f: A => B, g: A => B) = ???

@@ -140,10 +140,11 @@ object Monoid:
       (a.keySet ++ b.keySet).foldLeft(empty) { (acc, key) =>
         acc.updated(key, mv.combine(a.getOrElse(key, mv.empty), b.getOrElse(key, mv.empty)))
       }
-      
+
     val empty: Map[K, V] = Map.empty
 
   def bag[A](as: IndexedSeq[A]): Map[A, Int] =
-    ???
+    given Monoid[Int] = intAddition
+    Monoid.foldMapV(as, mapMergeMonoid)(a => Map(a -> 1))
 
 end Monoid

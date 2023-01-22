@@ -223,9 +223,9 @@ object MonadSuite extends Assertions:
     new TestedMonad[Gen]:
       val monad: Monad[Gen] = Monad.genMonad
       def pure[A]: A => Gen[A] = Gen.unit
-      override def assertFs[A](actual: Gen[A], expected: Gen[A]): Unit = ???
+      override def assertFs[A](actual: Gen[A], expected: Gen[A]): Unit =
         // ToDo: Uncomment after fpinscala.exercises.testing.GenSuite passing
-        // Assertions.assertEquals(actual.next(rng)._1, expected.next(rng)._1)
+         Assertions.assertEquals(actual.next(rng)._1, expected.next(rng)._1)
 
 
   private val parMonad: TestedMonad[Par[_]] =

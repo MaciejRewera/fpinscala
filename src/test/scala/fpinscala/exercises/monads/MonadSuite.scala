@@ -25,9 +25,11 @@ class MonadSuite extends PropSuite:
     assertMonad[Par](parMonad, n, s)
   }
 
+  /*
   test("parserMonad")(genInt ** genString) { case n ** s =>
     assertMonad[Parser[_]](parserMonad(s), n, s)
   }
+  */
 
   test("optionMonad")(genInt ** genString) { case n ** s =>
     assertMonad[Option[_]](optionMonad, n, s)

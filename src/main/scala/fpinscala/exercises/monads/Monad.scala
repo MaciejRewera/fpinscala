@@ -47,6 +47,10 @@ trait Monad[F[_]] extends Functor[F]:
     case Nil => unit(Nil)
     case a :: tl => f(a).map2(traverse(tl)(f))(_ :: _)
 
+  def traverseF[A, B](fas: List[F[A]])(f: A => F[B]): F[List[B]] = fas match
+    case Nil => unit(Nil)
+    case fa :: tl => fa.flatMap(f).map2(traverseF(tl)(f))(_ :: _)
+
   def replicateM[A](n: Int, fa: F[A]): F[List[A]] =
     ???
 

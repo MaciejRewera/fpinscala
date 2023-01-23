@@ -57,6 +57,13 @@ class MonadSuite extends PropSuite:
     assertFs(listMonad, pure(intList))
   }
 
+  test("Monad.traverseF")(genIntList ** genRNG) { case intList ** rng =>
+    val tm = genMonad(rng)
+    import tm.*
+    val listMonad = monad.traverseF(intList.map(Gen.unit))(Gen.unit)
+    assertFs(listMonad, pure(intList))
+  }
+
   // ToDo: Uncomment after fpinscala.exercises.testing.GenSuite passing
 /*
   test("Monad.replicateM")(genShortNumber ** genString ** genRNG) { case n ** s ** rng =>

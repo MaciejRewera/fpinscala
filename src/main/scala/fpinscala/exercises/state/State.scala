@@ -195,9 +195,7 @@ object Candy:
     } yield list.lastOption.getOrElse((s.coins, s.candies))
 
   def simulateMachineAccumulate(inputs: List[Input]): State[Machine, List[(Int, Int)]] =
-    for {
-      list <- State.traverse(inputs)(i => State.apply(update(i)))
-    } yield list
+      State.traverse(inputs)(i => State.apply(update(i)))
 
   private def update(input: Input) = (machine: Machine) =>
     (input, machine) match

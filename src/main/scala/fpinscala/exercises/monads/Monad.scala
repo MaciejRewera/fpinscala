@@ -39,11 +39,13 @@ trait Monad[F[_]] extends Functor[F]:
     def map2[B, C](fb: F[B])(f: (A, B) => C): F[C] =
       fa.flatMap(a => fb.map(b => f(a, b)))
 
-  def sequence[A](fas: List[F[A]]): F[List[A]] =
-    ???
+  def sequence[A](fas: List[F[A]]): F[List[A]] = fas match
+    case Nil => unit(Nil)
+    case fa :: tl => fa.map2(sequence(tl))(_ :: _)
 
-  def traverse[A, B](as: List[A])(f: A => F[B]): F[List[B]] =
-    ???
+  def traverse[A, B](as: List[A])(f: A => F[B]): F[List[B]] = as match
+    case Nil => unit(Nil)
+    case a :: tl => f(a).map2(traverse(tl)(f))(_ :: _)
 
   def replicateM[A](n: Int, fa: F[A]): F[List[A]] =
     ???

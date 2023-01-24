@@ -59,15 +59,16 @@ trait Monad[F[_]] extends Functor[F]:
 
   def replicateM_2[A](n: Int, fa: F[A]): F[List[A]] = sequence(LazyList.fill(n)(fa))
 
+  def filterM[A](as: List[A])(f: A => F[Boolean]): F[List[A]] = as match
+    case Nil => unit(Nil)
+    case a :: tl => f(a).map2(filterM(tl)(f)) { (b, rest) => if b then a :: rest else rest }
+
   def compose[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] =
     ???
 
   extension [A](fa: F[A])
     def flatMapViaCompose[B](f: A => F[B]): F[B] =
       ???
-
-  def filterM[A](as: List[A])(f: A => F[Boolean]): F[List[A]] =
-    ???
 
   extension [A](ffa: F[F[A]]) def join: F[A] =
     ???

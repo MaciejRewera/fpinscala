@@ -63,8 +63,7 @@ trait Monad[F[_]] extends Functor[F]:
     case Nil => unit(Nil)
     case a :: tl => f(a).map2(filterM(tl)(f)) { (b, rest) => if b then a :: rest else rest }
 
-  def compose[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] =
-    ???
+  def compose[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] = a => f(a).flatMap(g)
 
   extension [A](fa: F[A])
     def flatMapViaCompose[B](f: A => F[B]): F[B] =

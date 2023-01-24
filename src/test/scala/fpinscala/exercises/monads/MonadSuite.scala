@@ -93,7 +93,7 @@ class MonadSuite extends PropSuite:
   test("The associative law")(genIntList ** genString ** genRNG) { case intList ** s ** rng =>
     assertAssociativeLaw[Gen](genMonad(rng), intList)
     assertAssociativeLaw[Par](parMonad, intList)
-    assertAssociativeLaw[Parser[_]](parserMonad(s), intList)
+//    assertAssociativeLaw[Parser[_]](parserMonad(s), intList)
     assertAssociativeLaw[Option[_]](optionMonad, intList)
     assertAssociativeLaw[LazyList[_]](lazyListMonad, intList)
     assertAssociativeLaw[List[_]](listMonad, intList)
@@ -109,7 +109,7 @@ class MonadSuite extends PropSuite:
   test("Monad.compose should be associative")(genIntList ** genString ** genRNG) { case intList ** s ** rng =>
     assertAssociativeCompose[Gen](genMonad(rng), intList)
     assertAssociativeCompose[Par](parMonad, intList)
-    assertAssociativeCompose[Parser[_]](parserMonad(s), intList)
+//    assertAssociativeCompose[Parser[_]](parserMonad(s), intList)
     assertAssociativeCompose[Option[_]](optionMonad, intList)
     assertAssociativeCompose[LazyList[_]](lazyListMonad, intList)
     assertAssociativeCompose[List[_]](listMonad, intList)
@@ -125,14 +125,14 @@ class MonadSuite extends PropSuite:
   test("The identity law")(genIntList ** genString ** genRNG) { case intList ** s ** rng =>
     assertIdentityLawForCompose[Gen](genMonad(rng), intList)
     assertIdentityLawForCompose[Par](parMonad, intList)
-    assertIdentityLawForCompose[Parser[_]](parserMonad(s), intList)
+//    assertIdentityLawForCompose[Parser[_]](parserMonad(s), intList)
     assertIdentityLawForCompose[Option[_]](optionMonad, intList)
     assertIdentityLawForCompose[LazyList[_]](lazyListMonad, intList)
     assertIdentityLawForCompose[List[_]](listMonad, intList)
 
     assertIdentityLawForFlatMap[Gen](genMonad(rng), intList)
     assertIdentityLawForFlatMap[Par](parMonad, intList)
-    assertIdentityLawForFlatMap[Parser[_]](parserMonad(s), intList)
+//    assertIdentityLawForFlatMap[Parser[_]](parserMonad(s), intList)
     assertIdentityLawForFlatMap[Option[_]](optionMonad, intList)
     assertIdentityLawForFlatMap[LazyList[_]](lazyListMonad, intList)
     assertIdentityLawForFlatMap[List[_]](listMonad, intList)

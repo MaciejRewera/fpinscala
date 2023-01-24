@@ -43,6 +43,10 @@ trait Monad[F[_]] extends Functor[F]:
     case Nil => unit(Nil)
     case fa :: tl => fa.map2(sequence(tl))(_ :: _)
 
+  def sequence[A](fas: LazyList[F[A]]): F[List[A]] =
+    if (fas.isEmpty) unit(Nil)
+    else fas.head.map2(sequence(fas.tail))(_ :: _)
+
   def traverse[A, B](as: List[A])(f: A => F[B]): F[List[B]] = as match
     case Nil => unit(Nil)
     case a :: tl => f(a).map2(traverse(tl)(f))(_ :: _)
@@ -51,8 +55,9 @@ trait Monad[F[_]] extends Functor[F]:
     case Nil => unit(Nil)
     case fa :: tl => fa.flatMap(f).map2(traverseF(tl)(f))(_ :: _)
 
-  def replicateM[A](n: Int, fa: F[A]): F[List[A]] =
-    ???
+  def replicateM[A](n: Int, fa: F[A]): F[List[A]] = sequence(List.fill(n)(fa))
+
+  def replicateM_2[A](n: Int, fa: F[A]): F[List[A]] = sequence(LazyList.fill(n)(fa))
 
   def compose[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] =
     ???

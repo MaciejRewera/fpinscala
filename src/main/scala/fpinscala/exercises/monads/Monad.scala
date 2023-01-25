@@ -68,8 +68,7 @@ trait Monad[F[_]] extends Functor[F]:
   extension [A](fa: F[A])
     def flatMapViaCompose[B](f: A => F[B]): F[B] = compose(_ => fa, f)(())
 
-  extension [A](ffa: F[F[A]]) def join: F[A] =
-    ???
+  extension [A](ffa: F[F[A]]) def join: F[A] = ffa.flatMap((fa: F[A]) => fa)
 
   extension [A](fa: F[A])
     def flatMapViaJoinAndMap[B](f: A => F[B]): F[B] =

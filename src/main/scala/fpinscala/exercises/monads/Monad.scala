@@ -112,10 +112,15 @@ object Monad:
     extension [A](fa: List[A])
       override def flatMap[B](f: A => List[B]) = fa.flatMap(f)
 
-//  given stateMonad[S](s: S): Monad[State] with
-//    def unit[S, A](a: => A): State[S, A] = State.unit(a)
-//    extension [S, A](fa: State[S, A])
-//      override def flatMap[B](f: A => State[S, B]): State[S, B] = State(fa)(f)
+  trait StateMonad[S]:
+    type StateS[A] = State[S, A]
+
+    given stateMonad: Monad[StateS] with
+      def unit[A](a: => A): State[S, A] = State.unit(a)
+      extension [A](fa: State[S, A])
+        override def flatMap[B](f: A => State[S, B]): State[S, B] = State.flatMap(fa)(f)
+
+  end StateMonad
 
 end Monad
 

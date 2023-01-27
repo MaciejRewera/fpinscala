@@ -1,6 +1,7 @@
 package fpinscala.learning.io
 
 import fpinscala.exercises.iomonad.Monad
+import fpinscala.learning.io.IOPlayground.TailRec.*
 
 import scala.annotation.tailrec
 import scala.io.StdIn.readLine
@@ -8,7 +9,14 @@ import scala.io.StdIn.readLine
 object IOPlayground {
 
   @main def main = {
-    Factorial.factorialRepl.run
+//    TailRec.Suspend(() => println("Still going...")).forever.run
+
+    val f: Int => TailRec[Int] = (x: Int) => Return(x)
+    val g = List.fill(100000)(f).foldLeft(f) { (a, b) =>
+      x => Return(x).flatMap(a).flatMap(b)
+    }
+
+    println(g(42).run)
   }
 
   private val echo: IO[Unit] = ReadLine.flatMap(PrintLine)
@@ -71,4 +79,35 @@ object IOPlayground {
       extension[A] (fa: IO[A])
         override def flatMap[B](f: A => IO[B]): IO[B] = fa.flatMap(f)
   }
+  
+  enum TailRec[A]:
+    case Return(a: A)
+    case Suspend(resume: () => A)
+    case FlatMap[A, B](sub: TailRec[A], k: A => TailRec[B]) extends TailRec[B]
+
+    def flatMap[B](f: A => TailRec[B]): TailRec[B] = FlatMap(this, f)
+
+    def map[B](f: A => B): TailRec[B] = flatMap(a => Return(f(a)))
+
+    @tailrec
+    final def run: A = this match
+      case Return(a) => a
+      case Suspend(r) => r()
+      case FlatMap(x, f) => x match
+        case Return(a) => f(a).run
+        case Suspend(r) => f(r()).run
+        case FlatMap(y, g) => y.flatMap(a => g(a).flatMap(f)).run
+//        case FlatMap(y, g) => FlatMap(y, a => FlatMap(g(a), f)).run
+  end TailRec
+
+  object TailRec:
+    def apply[A](a: => A)(using tailRecMonad: Monad[TailRec]): TailRec[A] =
+      Suspend(() => Return(a)).flatMap(identity)
+
+    given tailRecMonad: Monad[TailRec] with
+      override def unit[A](a: => A): TailRec[A] = TailRec(a)
+
+      extension[A] (fa: TailRec[A])
+        override def flatMap[B](f: A => TailRec[B]): TailRec[B] = fa.flatMap(f)
+  end TailRec
 }

@@ -5,6 +5,7 @@ import fpinscala.learning.io.IOPlayground.TailRec.*
 
 import scala.annotation.tailrec
 import scala.io.StdIn.readLine
+import scala.util.control.TailCalls
 
 object IOPlayground {
 
@@ -17,6 +18,7 @@ object IOPlayground {
     }
 
     println(g(42).run)
+    BuiltInTailRec.testRun(42).result
   }
 
   private val echo: IO[Unit] = ReadLine.flatMap(PrintLine)
@@ -110,4 +112,14 @@ object IOPlayground {
       extension[A] (fa: TailRec[A])
         override def flatMap[B](f: A => TailRec[B]): TailRec[B] = fa.flatMap(f)
   end TailRec
+
+  object BuiltInTailRec:
+    private val f: Int => TailCalls.TailRec[Int] = (x: Int) => TailCalls.done(x)
+    private val g = List.fill(100000)(f).foldLeft(f) { (a, b) =>
+      x => TailCalls.tailcall(a(x).flatMap(b))
+    }
+
+    def testRun(n: Int): TailCalls.TailRec[Unit] = TailCalls.done(println(g(n).result))
+
+  end BuiltInTailRec
 }

@@ -1,6 +1,12 @@
 package fpinscala.learning.io
 
 import fpinscala.answers.iomonad.Free
+import fpinscala.exercises.iomonad.Monad
+import fpinscala.learning.io.Free.Return
+
+import scala.annotation.tailrec
+import scala.util.control.TailCalls
+import fpinscala.learning.io.Free.given
 
 enum Free[+F[_], A]:
   case Return(a: A) extends Free[Nothing, A]
@@ -11,12 +17,19 @@ enum Free[+F[_], A]:
 
   def map[B](f: A => B): Free[F, B] = this.flatMap(a => Return(f(a)))
 
-  @tailrec
-  def step: Free[F, A] = this match
-    case FlatMap(FlatMap(x, f), g) => step(x.flatMap(f).flatMap(g))
-    case FlatMap(Return(x), f) => step(f(x))
-    case _ => this
+  def covary[F2[x] >: F[x]]: Free[F2, A] = this
 
+  def run[F2[x] >: F[x]](using fMonad: Monad[F2]): F2[A] = this.step match
+    case Return(a) => fMonad.unit(a)
+    case Suspend(fa) => fa
+    case FlatMap(Suspend(fa), f) => fa.flatMap(a => f(a).run)
+    case FlatMap(_, _) => sys.error("Impossible, since `step` eliminates these cases")
+
+  @tailrec
+  final def step: Free[F, A] = this match
+    case FlatMap(FlatMap(fx, f), g) => fx.flatMap(x => f(x).flatMap(y => g(y).covary[F])).step
+    case FlatMap(Return(x), f) => f(x).step
+    case _ => this
 
 end Free
 
@@ -35,3 +48,5 @@ object Free:
         case Return(a) => f(a).runTrampoline
         case Suspend(s) => f(s()).runTrampoline
         case FlatMap(y, g) => y.flatMap(g).flatMap(f).runTrampoline
+
+end Free

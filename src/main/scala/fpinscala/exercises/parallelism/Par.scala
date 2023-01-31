@@ -2,9 +2,10 @@ package fpinscala.exercises.parallelism
 
 import java.util.concurrent.*
 
-object Par:
-  opaque type Par[A] = ExecutorService => Future[A]
+opaque type Par[A] = ExecutorService => Future[A]
 
+object Par:
+  
   extension [A](pa: Par[A]) def run(s: ExecutorService): Future[A] = pa(s)
 
   def unit[A](a: A): Par[A] =

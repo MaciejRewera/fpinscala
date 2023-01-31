@@ -6,7 +6,6 @@ import fpinscala.exercises.common.Common.*
 import fpinscala.exercises.common.PropSuite
 import fpinscala.exercises.monads.MonadSuite.*
 import fpinscala.exercises.parallelism.Par
-import fpinscala.exercises.parallelism.Par.Par
 import fpinscala.exercises.parsing.UnitTestParser
 import fpinscala.exercises.parsing.UnitTestParser.{Parser, succeed}
 import fpinscala.exercises.state.RNG

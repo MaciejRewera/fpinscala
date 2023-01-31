@@ -42,12 +42,14 @@ enum Free[F[_], A]:
     case Suspend(fa) => t(fa)
     case FlatMap(Suspend(fa), f) => t(fa).flatMap(a => f(a).runFree(t))
     case FlatMap(_, _) => sys.error("Impossible, since `step` eliminates these cases")
-//
-//  def runFree[G[_]](t: [x] => F[x] => G[x])(using gMonad: Monad[G]): G[A] = this.step match
-//    case Return(a) => gMonad.unit(a)
-//    case Suspend(fa) => t(fa)
-//    case FlatMap(Suspend(fa), f) => t(fa).flatMap(a => f(a).runFree(t))
-//    case FlatMap(_, _) => sys.error("Impossible, since `step` eliminates these cases")
+
+  def translate[G[_]](fg: F ~> G): Free[G, A] =
+    type FG[A] = Free[G, A]
+    val newFg = new (F ~> FG) {
+      override def apply[A](f: F[A]): Free[G, A] = Suspend(fg.apply(f))
+    }
+
+    runFree[FG](newFg)
 
 end Free
 
@@ -57,7 +59,7 @@ object Free:
     extension [A](fa: Free[F, A])
       override def flatMap[B](f: A => Free[F, B]): Free[F, B] = fa.flatMap(f)
 
-  extension[A] (fa: Free[Function0, A])
+  extension [A](fa: Free[Function0, A])
     @tailrec
     def runTrampoline: A = fa match
       case Return(a) => a
@@ -108,13 +110,17 @@ object Free:
       def toThunk: () => A = fa.runFree(consoleToThunk)
       def toPar: Par[A] = fa.runFree(consoleToPar)
 
+      def runConsole: A = fa.translate[Function0](consoleToThunk).runTrampoline
+
   end Console
 
   @main def testConsole: Unit = {
     val program: ConsoleIO[Option[String]] = for {
       _ <- Console.printLn("Hello, World!")
       res <- Console.readLn
-    } yield (res)
+      _ <- Console.printLn(s"You've entered '${res.getOrElse("")}'")
+      _ <- Console.printLn("Bye!")
+    } yield res
 
     val es = Executors.newFixedThreadPool(4)
     given Monad[Par] with
@@ -123,7 +129,7 @@ object Free:
         def flatMap[B](f: A => Par[B]) = Par.fork(Par.flatMap(fa)(f))
 
 //    Console.runConsolePar(program).run(es)
-    program.toPar.run(es)
+//    program.toPar.run(es)
 
     given Monad[Function0] with
       def unit[A](a: => A) = () => a
@@ -131,7 +137,7 @@ object Free:
         def flatMap[B](f: A => Function0[B]) = () => f(fa())()
 
 //    Console.runConsoleFunction0(program)()
-    program.toThunk.apply()
+    program.runConsole
   }
 
 end Free

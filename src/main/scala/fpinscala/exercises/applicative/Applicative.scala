@@ -85,10 +85,13 @@ object Applicative:
   
   object Validated:
     given validatedApplicative[E: Monoid]: Applicative[Validated[E, _]] with
-      def unit[A](a: => A) = ???
+      def unit[A](a: => A) = Valid(a)
       extension [A](fa: Validated[E, A])
-        override def map2[B, C](fb: Validated[E, B])(f: (A, B) => C) =
-          ???
+        override def map2[B, C](fb: Validated[E, B])(f: (A, B) => C) = (fa, fb) match
+            case (Valid(a), Valid(b)) => Valid(f(a, b))
+            case (Invalid(ea), Invalid(eb)) => Invalid(summon[Monoid[E]].combine(ea, eb))
+            case (e @ Invalid(_), _) => e
+            case (_, e @ Invalid(_)) => e
 
   type Const[A, B] = A
 

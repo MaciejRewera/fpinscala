@@ -3,6 +3,7 @@ package fpinscala.exercises.applicative
 import fpinscala.answers.monads.Functor
 import fpinscala.answers.monoids.Monoid
 import fpinscala.answers.state.State
+import fpinscala.exercises.applicative.Applicative.Validated
 
 trait Applicative[F[_]] extends Functor[F]:
   self =>
@@ -56,8 +57,10 @@ trait Applicative[F[_]] extends Functor[F]:
         )(fc)
       )(fd)
 
-  def product[G[_]](G: Applicative[G]): Applicative[[x] =>> (F[x], G[x])] =
-    ???
+  def product[G[_]](G: Applicative[G]): Applicative[[x] =>> (F[x], G[x])] = new:
+    override def unit[A](a: => A): (F[A], G[A]) = (self.unit(a), G.unit(a))
+    override def apply[A, B](fs: (F[A => B], G[A => B]))(p: (F[A], G[A])): (F[B], G[B]) =
+      (self.apply(fs._1)(p._1), G.apply(fs._2)(p._2))
 
   def compose[G[_]](G: Applicative[G]): Applicative[[x] =>> F[G[x]]] =
     ???
@@ -92,6 +95,9 @@ object Applicative:
             case (Invalid(ea), Invalid(eb)) => Invalid(summon[Monoid[E]].combine(ea, eb))
             case (e @ Invalid(_), _) => e
             case (_, e @ Invalid(_)) => e
+
+
+
 
   type Const[A, B] = A
 

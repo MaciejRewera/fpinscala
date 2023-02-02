@@ -102,9 +102,11 @@ object Applicative:
       override def flatMap[B](f: A => Option[B]) = oa.flatMap(f)
 
   given eitherMonad[E]: Monad[Either[E, _]] with
-    def unit[A](a: => A): Either[E, A] = ???
+    def unit[A](a: => A): Either[E, A] = Right(a)
     extension [A](eea: Either[E, A])
-      override def flatMap[B](f: A => Either[E, B]) = ???
+      override def flatMap[B](f: A => Either[E, B]) = eea match
+        case Right(r) => f(r)
+        case Left(l) => Left(l)
 
   given stateMonad[S]: Monad[State[S, _]] with
     def unit[A](a: => A): State[S, A] = State(s => (a, s))

@@ -10,11 +10,12 @@ trait Applicative[F[_]] extends Functor[F]:
   def unit[A](a: => A): F[A]
 
   def apply[A, B](fab: F[A => B])(fa: F[A]): F[B] =
-    ???
+    fa.map2(fab)((a, ab) => ab(a))
 
   extension [A](fa: F[A])
     def map2[B,C](fb: F[B])(f: (A, B) => C): F[C] =
-      ???
+      val fabc = apply(unit(f.curried))
+      apply(fabc(fa))(fb)
 
     def map[B](f: A => B): F[B] =
       apply(unit(f))(fa)

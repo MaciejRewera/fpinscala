@@ -37,14 +37,24 @@ trait Applicative[F[_]] extends Functor[F]:
       fb: F[B],
       fc: F[C]
     )(f: (A, B, C) => D): F[D] =
-      ???
+      apply(
+        apply(
+          apply(unit(f.curried))(fa)
+        )(fb)
+      )(fc)
 
     def map4[B, C, D, E](
       fb: F[B],
       fc: F[C],
       fd: F[D]
     )(f: (A, B, C, D) => E): F[E] =
-      ???
+      apply(
+        apply(
+          apply(
+            apply(unit(f.curried))(fa)
+          )(fb)
+        )(fc)
+      )(fd)
 
   def product[G[_]](G: Applicative[G]): Applicative[[x] =>> (F[x], G[x])] =
     ???

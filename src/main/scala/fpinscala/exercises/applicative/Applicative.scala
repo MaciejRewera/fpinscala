@@ -69,7 +69,7 @@ trait Applicative[F[_]] extends Functor[F]:
         self.map2(fga)(fgb)((ga: G[A], gb: G[B]) => G.map2(ga)(gb)(f))
 
   def sequenceMap[K,V](ofa: Map[K, F[V]]): F[Map[K, V]] =
-    ???
+    ofa.foldLeft(unit(Map.empty[K, V])) { case (fmap, (k, fv)) => fv.map2(fmap)((v, map) => map + (k -> v)) }
 
 object Applicative:
   opaque type ZipList[+A] = LazyList[A]

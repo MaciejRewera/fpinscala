@@ -21,16 +21,6 @@ trait Applicative[F[_]] extends Functor[F]:
     def map[B](f: A => B): F[B] =
       apply(unit(f))(fa)
 
-  def sequence[A](fas: List[F[A]]): F[List[A]] =
-    traverse(fas)(identity)
-
-  def traverse[A,B](as: List[A])(f: A => F[B]): F[List[B]] =
-    as.foldRight(unit(List.empty[B])) { (a, acc) => f(a).map2(acc)(_ :: _) }
-
-  def replicateM[A](n: Int, fa: F[A]): F[List[A]] =
-    sequence(List.fill(n)(fa))
-
-  extension [A](fa: F[A])
     def product[B](fb: F[B]): F[(A, B)] =
       fa.map2(fb)((_, _))
 
@@ -57,13 +47,26 @@ trait Applicative[F[_]] extends Functor[F]:
         )(fc)
       )(fd)
 
+  def sequence[A](fas: List[F[A]]): F[List[A]] =
+    traverse(fas)(identity)
+
+  def traverse[A,B](as: List[A])(f: A => F[B]): F[List[B]] =
+    as.foldRight(unit(List.empty[B])) { (a, acc) => f(a).map2(acc)(_ :: _) }
+
+  def replicateM[A](n: Int, fa: F[A]): F[List[A]] =
+    sequence(List.fill(n)(fa))
+
   def product[G[_]](G: Applicative[G]): Applicative[[x] =>> (F[x], G[x])] = new:
-    override def unit[A](a: => A): (F[A], G[A]) = (self.unit(a), G.unit(a))
+    override def unit[A](a: => A): (F[A], G[A]) =
+      (self.unit(a), G.unit(a))
     override def apply[A, B](fs: (F[A => B], G[A => B]))(p: (F[A], G[A])): (F[B], G[B]) =
       (self.apply(fs._1)(p._1), G.apply(fs._2)(p._2))
 
-  def compose[G[_]](G: Applicative[G]): Applicative[[x] =>> F[G[x]]] =
-    ???
+  def compose[G[_]](G: Applicative[G]): Applicative[[x] =>> F[G[x]]] = new:
+    override def unit[A](a: => A): F[G[A]] = self.unit(G.unit(a))
+    extension [A](fga: F[G[A]])
+      override def map2[B, C](fgb: F[G[B]])(f: (A, B) => C): F[G[C]] =
+        self.map2(fga)(fgb)((ga: G[A], gb: G[B]) => G.map2(ga)(gb)(f))
 
   def sequenceMap[K,V](ofa: Map[K, F[V]]): F[Map[K, V]] =
     ???

@@ -32,7 +32,7 @@ trait Traverse[F[_]] extends Functor[F], Foldable[F]:
       fa.traverse[Const[B, _], Nothing](f)
 
     override def foldLeft[B](acc: B)(f: (B, A) => B): B =
-      ???
+      fa.mapAccum(acc)((a, b) => ((), f(b, a)))._2
 
     override def toList: List[A] =
       fa.mapAccum(List.empty[A])((a, s) => ((), a :: s))._2.reverse

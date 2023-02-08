@@ -56,7 +56,7 @@ trait Traverse[F[_]] extends Functor[F], Foldable[F]:
       fa.mapAccum(0)((a, s) => ((a, s), s + 1))(0)
 
     def reverse: F[A] =
-      ???
+      fa.mapAccum(fa.toList.reverse)((_, s) => (s.head, s.tail))._1
 
     def fuse[M[_], N[_], B](f: A => M[B], g: A => N[B])(using m: Applicative[M], n: Applicative[N]): (M[F[B]], N[F[B]]) =
       ???

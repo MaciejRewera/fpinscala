@@ -16,9 +16,17 @@ trait Traverse[F[_]] extends Functor[F], Foldable[F]:
     def sequence: G[F[A]] =
       fga.traverse(ga => ga)
 
+  type Id[A] = A
+
+  object Id:
+    given idMonad: Monad[Id] with
+      def unit[A](a: => A) = a
+      extension[A] (a: A)
+        override def flatMap[B](f: A => B): B = f(a)
+
   extension [A](fa: F[A])
     def map[B](f: A => B): F[B] =
-      ???
+      fa.traverse[Id, B](f)(using Id.idMonad)
 
     override def foldMap[B](f: A => B)(using mb: Monoid[B]): B =
       fa.traverse[Const[B, _], Nothing](f)

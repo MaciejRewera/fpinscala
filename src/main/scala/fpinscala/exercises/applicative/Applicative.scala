@@ -99,9 +99,6 @@ object Applicative:
             case (e @ Invalid(_), _) => e
             case (_, e @ Invalid(_)) => e
 
-
-
-
   type Const[A, B] = A
 
   given monoidApplicative[M](using m: Monoid[M]): Applicative[Const[M, _]] with

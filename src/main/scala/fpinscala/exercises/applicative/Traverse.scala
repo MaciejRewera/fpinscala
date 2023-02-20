@@ -62,9 +62,10 @@ trait Traverse[F[_]] extends Functor[F], Foldable[F]:
       fa.traverse[[x] =>> (M[x], N[x]), B](a => (f(a), g(a)))(using m.product(n))
   
   def compose[G[_]: Traverse]: Traverse[[x] =>> F[G[x]]] = new:
-    extension [A](fa: F[G[A]])
+    extension [A](fga: F[G[A]])
       override def traverse[H[_]: Applicative, B](f: A => H[B]): H[F[G[B]]] =
-        ???
+        val g = summon[Traverse[G]]
+        self.traverse(fga)(ga => ga.traverse(f))
 
 case class Tree[+A](head: A, tail: List[Tree[A]])
 
